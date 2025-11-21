@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة جداول الحفظ - تحويل React</title>
+    
+    <!-- استيراد Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- استيراد الخطوط (Cairo و Amiri) -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- استيراد مكتبة html2pdf -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        .font-serif { font-family: 'Amiri', serif; }
+        
+        /* تخصيص شريط التمرير */
+        .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+        .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+
+        /* تخصيص الكتابة الرأسية */
+        .vertical-text {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800">
+
+    <!-- --- الرأس (Header) --- -->
+    <header class="bg-white shadow-sm border-b border-slate-100 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <!-- صورة الشعار مع بديل في حال عدم وجود الصورة -->
+                <img src="/logo.jpg" onerror="this.src='https://via.placeholder.com/150/10b981/FFFFFF?text=Quran'" alt="شعار الموقع" class="w-12 h-12 rounded-full object-cover border border-emerald-100 bg-emerald-50">
+                
+                <div>
+                    <h1 class="text-lg font-bold text-slate-800 leading-tight">منصة جداول الحفظ</h1>
+                    <p class="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                        <!-- SVG Heart Icon -->
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5 4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                        هدية من فريق الراسخون
+                    </p>
+                </div>
+            </div>
+            
+            <button onclick="downloadPdf()" id="downloadBtn" class="hidden md:flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-full text-sm font-bold shadow-emerald-200 shadow-lg transition-all active:scale-95 disabled:opacity-50">
+                <span>تحميل PDF</span>
+                <!-- SVG Download Icon -->
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto p-4 md:p-8 gap-8 grid grid-cols-1 lg:grid-cols-12">
+        
+        <!-- --- قسم التعديل (يمين الشاشة) --- -->
+        <div class="lg:col-span-4 space-y-6">
+            
+            <!-- بطاقة: بيانات الطالب -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <h2 class="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
+                    <div class="w-2 h-6 bg-emerald-500 rounded-full"></div>
+                    بيانات الطالب
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1.5">اسم الطالب</label>
+                        <input type="text" id="inputName" oninput="updateData()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all" value="عمرو">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1.5">عنوان الأسبوع</label>
+                        <input type="text" id="inputWeek" oninput="updateData()" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all" value="الثاني">
+                    </div>
+                </div>
+            </div>
+
+            <!-- بطاقة: الأوراد الثابتة -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <h2 class="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
+                    <div class="w-2 h-6 bg-blue-500 rounded-full"></div>
+                    الأوراد الثابتة
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-blue-600 mb-1.5">الماضي البعيد</label>
+                        <textarea id="inputFarPast" oninput="updateData()" rows="2" class="w-full px-3 py-2 bg-blue-50/50 border border-blue-100 rounded-xl focus:border-blue-400 outline-none text-sm">-</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-indigo-600 mb-1.5">الماضي القريب</label>
+                        <textarea id="inputNearPast" oninput="updateData()" rows="2" class="w-full px-3 py-2 bg-indigo-50/50 border border-indigo-100 rounded-xl focus:border-indigo-400 outline-none text-sm">تسميع من أول سورة البقرة إلى آية ٢٥ يومياً</textarea>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-emerald-600 mb-1.5">التحضير</label>
+                        <textarea id="inputPrep" oninput="updateData()" rows="3" class="w-full px-3 py-2 bg-emerald-50/50 border border-emerald-100 rounded-xl focus:border-emerald-400 outline-none text-sm">(( تلاوة ربع ))
+(( أتأمرون الناس بالبر ))
+والصلاة بالمحفوظ على مدار اليوم</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- بطاقة: الحفظ اليومي (صفوف) -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                <h2 class="text-lg font-bold text-slate-700 mb-4 flex items-center gap-2">
+                    <div class="w-2 h-6 bg-amber-500 rounded-full"></div>
+                    الحفظ اليومي
+                </h2>
+                <!-- سيتم تعبئة هذا القسم بواسطة JavaScript -->
+                <div id="rowsContainer" class="space-y-3 max-h-[400px] overflow-y-auto pr-1 scrollbar-thin"></div>
+            </div>
+
+            <!-- زر للموبايل -->
+            <button onclick="downloadPdf()" id="downloadBtnMobile" class="w-full md:hidden flex items-center justify-center gap-2 bg-emerald-600 text-white p-4 rounded-xl font-bold shadow-lg">
+                <span>تحميل الجدول PDF</span>
+            </button>
+        </div>
+
+        <!-- --- قسم المعاينة (يسار الشاشة) --- -->
+        <div class="lg:col-span-8 bg-slate-200/50 rounded-3xl p-4 md:p-8 border border-slate-200/60 overflow-auto flex items-start justify-center">
+            
+            <!-- ورقة A4 -->
+            <div id="pdfContent" class="bg-white shadow-xl w-[297mm] min-h-[210mm] relative box-border p-8" style="font-family: 'Amiri', 'Cairo', serif;">
+                
+                <!-- رأس الـ PDF -->
+                <div class="flex items-center justify-between mb-6 border-b-2 border-double border-slate-100 pb-4">
+                    <div class="text-right w-2/3">
+                        <h2 class="text-4xl font-bold text-slate-800 mb-2">
+                            الأسبوع <span id="previewWeek">الثاني</span>
+                        </h2>
+                        <div class="inline-block bg-emerald-50 px-4 py-1 rounded-full border border-emerald-100">
+                            <span class="text-emerald-800 font-bold">الطالب: <span id="previewName">عمرو</span></span>
+                        </div>
+                    </div>
+                    <div class="w-1/3 flex flex-col items-end justify-center">
+                         <p class="text-base text-emerald-700 font-bold flex items-center gap-1 bg-emerald-50 px-4 py-2 rounded-lg border border-emerald-100/50">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5 4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                            هدية من فريق الراسخون
+                         </p>
+                    </div>
+                </div>
+
+                <!-- الجدول -->
+                <div class="w-full border-2 border-slate-800 rounded-lg overflow-hidden shadow-sm">
+                    <!-- ترويسة الجدول -->
+                    <div class="flex bg-emerald-50/80 border-b-2 border-slate-800 font-bold text-slate-800">
+                        <div class="w-[10%] p-3 text-center border-l-2 border-slate-800">اليوم</div>
+                        <div class="w-[15%] p-3 text-center border-l-2 border-slate-800">الماضي البعيد</div>
+                        <div class="w-[25%] p-3 text-center border-l-2 border-slate-800">الماضي القريب</div>
+                        <div class="w-[25%] p-3 text-center border-l-2 border-slate-800">الحفظ الجديد</div>
+                        <div class="w-[25%] p-3 text-center">التحضير</div>
+                    </div>
+
+                    <!-- جسم الجدول -->
+                    <div class="flex h-[550px]">
+                        
+                        <!-- عمود الأيام -->
+                        <div class="w-[10%] flex flex-col border-l-2 border-slate-800 bg-slate-50/30" id="previewDaysCol">
+                            <!-- سيتم التعبئة عبر JS -->
+                        </div>
+
+                        <!-- عمود الماضي البعيد (مدمج) -->
+                        <div class="w-[15%] flex items-center justify-center text-center border-l-2 border-slate-800 p-2 bg-white relative">
+                            <div id="previewFarPast" class="vertical-text font-bold text-2xl leading-relaxed whitespace-pre-wrap text-blue-900"></div>
+                        </div>
+
+                        <!-- عمود الماضي القريب (مدمج) -->
+                        <div class="w-[25%] flex items-center justify-center text-center border-l-2 border-slate-800 p-4 bg-white">
+                             <div id="previewNearPast" class="vertical-text font-bold text-2xl leading-relaxed whitespace-pre-wrap text-indigo-900"></div>
+                        </div>
+
+                        <!-- عمود الحفظ الجديد (صفوف) -->
+                        <div class="w-[25%] flex flex-col border-l-2 border-slate-800" id="previewNewHifzCol">
+                            <!-- سيتم التعبئة عبر JS -->
+                        </div>
+
+                        <!-- عمود التحضير (مدمج) -->
+                        <div class="w-[25%] flex items-center justify-center p-4 bg-emerald-50/10">
+                             <div id="previewPrep" class="vertical-text text-center font-bold text-xl leading-loose whitespace-pre-wrap text-slate-800"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- تذييل الـ PDF -->
+                <div class="mt-4 flex justify-between items-end opacity-60">
+                    <div class="text-xs text-slate-400">تم الإنشاء بواسطة منصة جداول الحفظ</div>
+                    <div class="flex gap-1">
+                        <div class="w-2 h-2 rounded-full bg-emerald-200"></div>
+                        <div class="w-2 h-2 rounded-full bg-blue-200"></div>
+                        <div class="w-2 h-2 rounded-full bg-indigo-200"></div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- البيانات الأولية (State) ---
+        let appState = {
+            studentName: 'عمرو',
+            weekNumber: 'الثاني',
+            farPast: '-',
+            nearPast: 'تسميع من أول سورة البقرة إلى آية ٢٥ يومياً',
+            preparation: '(( تلاوة ربع ))\n(( أتأمرون الناس بالبر ))\nوالصلاة بالمحفوظ على مدار اليوم',
+            rows: [
+                { day: 'السبت', type: 'range', from: '٢٦', to: '٢٨', text: '' },
+                { day: 'الأحد', type: 'range', from: '٢٦', to: '٣٣', text: '' },
+                { day: 'الاثنين', type: 'range', from: '٢٦', to: '٣٨', text: '' },
+                { day: 'الثلاثاء', type: 'range', from: '٢٦', to: '٤٣', text: '' },
+                { day: 'الأربعاء', type: 'text', from: '', to: '', text: 'تسميع الربع (٣) مرات' },
+                { day: 'الخميس', type: 'text', from: '', to: '', text: 'تسميع الربع (٥) مرات' },
+                { day: 'الجمعة', type: 'text', from: '', to: '', text: 'تسميع (٧) مرات' },
+            ]
+        };
+
+        // --- تهيئة الصفحة عند التحميل ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderEditorRows();
+            renderPreview();
+        });
+
+        // --- دالة التحديث الرئيسية ---
+        function updateData() {
+            // تحديث الحالة من المدخلات
+            appState.studentName = document.getElementById('inputName').value;
+            appState.weekNumber = document.getElementById('inputWeek').value;
+            appState.farPast = document.getElementById('inputFarPast').value;
+            appState.nearPast = document.getElementById('inputNearPast').value;
+            appState.preparation = document.getElementById('inputPrep').value;
+
+            // تحديث المعاينة
+            renderPreview();
+        }
+
+        // --- تحديث صف معين (Row Update) ---
+        function updateRow(index, field, value) {
+            appState.rows[index][field] = value;
+            renderPreview(); // تحديث المعاينة فقط
+        }
+
+        // --- تغيير نوع الإدخال (Range/Text) ---
+        function toggleRowType(index, type) {
+            appState.rows[index].type = type;
+            renderEditorRows(); // إعادة رسم المحرر لتغيير الحقول
+            renderPreview();    // تحديث المعاينة
+        }
+
+        // --- رسم قسم التعديل (Editor Rows) ---
+        function renderEditorRows() {
+            const container = document.getElementById('rowsContainer');
+            container.innerHTML = '';
+
+            appState.rows.forEach((row, index) => {
+                const div = document.createElement('div');
+                div.className = 'bg-slate-50 p-3 rounded-xl border border-slate-100';
+                
+                // أزرار التبديل
+                const rangeBtnClass = row.type === 'range' ? 'bg-emerald-100 text-emerald-700' : 'text-slate-400 hover:text-slate-600';
+                const textBtnClass = row.type === 'text' ? 'bg-emerald-100 text-emerald-700' : 'text-slate-400 hover:text-slate-600';
+
+                div.innerHTML = `
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="font-bold text-slate-700 text-sm">${row.day}</span>
+                        <div class="flex bg-white rounded-lg border border-slate-200 p-0.5 shadow-sm">
+                            <button onclick="toggleRowType(${index}, 'range')" class="px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 transition-colors ${rangeBtnClass}">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></svg>
+                            </button>
+                            <button onclick="toggleRowType(${index}, 'text')" class="px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 transition-colors ${textBtnClass}">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // حقول الإدخال بناءً على النوع
+                if (row.type === 'range') {
+                    div.innerHTML += `
+                        <div class="flex items-center gap-2">
+                            <input type="text" value="${row.from}" oninput="updateRow(${index}, 'from', this.value)" class="w-full p-1.5 bg-white border border-slate-200 rounded-lg text-center text-sm focus:border-emerald-400 outline-none" placeholder="من">
+                            <svg class="text-slate-300" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                            <input type="text" value="${row.to}" oninput="updateRow(${index}, 'to', this.value)" class="w-full p-1.5 bg-white border border-slate-200 rounded-lg text-center text-sm focus:border-emerald-400 outline-none" placeholder="إلى">
+                        </div>
+                    `;
+                } else {
+                    div.innerHTML += `
+                        <input type="text" value="${row.text}" oninput="updateRow(${index}, 'text', this.value)" class="w-full p-1.5 bg-white border border-slate-200 rounded-lg text-sm focus:border-emerald-400 outline-none" placeholder="نص الورد...">
+                    `;
+                }
+                container.appendChild(div);
+            });
+        }
+
+        // --- رسم المعاينة (Preview Render) ---
+        function renderPreview() {
+            // النصوص الثابتة
+            document.getElementById('previewName').innerText = appState.studentName;
+            document.getElementById('previewWeek').innerText = appState.weekNumber;
+            document.getElementById('previewFarPast').innerText = appState.farPast;
+            document.getElementById('previewNearPast').innerText = appState.nearPast;
+            document.getElementById('previewPrep').innerText = appState.preparation;
+
+            // الأعمدة الديناميكية (الأيام والحفظ الجديد)
+            const daysCol = document.getElementById('previewDaysCol');
+            const hifzCol = document.getElementById('previewNewHifzCol');
+            
+            daysCol.innerHTML = '';
+            hifzCol.innerHTML = '';
+
+            appState.rows.forEach(row => {
+                // خلية اليوم
+                daysCol.innerHTML += `
+                    <div class="flex-1 flex items-center justify-center border-b border-slate-300 last:border-b-0 font-bold text-slate-700 text-lg">
+                        ${row.day}
+                    </div>
+                `;
+
+                // خلية الحفظ الجديد
+                let content = '';
+                if (row.type === 'range') {
+                    content = `
+                        <div class="flex items-center gap-3 text-emerald-700 text-2xl font-bold dir-ltr">
+                            <span class="w-10 text-center font-serif">${row.from}</span>
+                            <span class="text-emerald-300 text-xl">←</span>
+                            <span class="w-10 text-center font-serif">${row.to}</span>
+                        </div>
+                    `;
+                } else {
+                    content = `
+                        <span class="font-bold text-emerald-800 text-xl leading-tight">
+                            ${row.text}
+                        </span>
+                    `;
+                }
+
+                hifzCol.innerHTML += `
+                    <div class="flex-1 flex items-center justify-center text-center border-b border-slate-300 last:border-b-0 p-1 bg-white">
+                        ${content}
+                    </div>
+                `;
+            });
+        }
+
+        // --- وظيفة تحميل PDF ---
+        function downloadPdf() {
+            const element = document.getElementById('pdfContent');
+            const btn = document.getElementById('downloadBtn');
+            const btnMobile = document.getElementById('downloadBtnMobile');
+            
+            // تغيير النص أثناء التحميل
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span>جاري المعالجة...</span>';
+            btnMobile.innerHTML = '<span>جاري المعالجة...</span>';
+            
+            const opt = {
+                margin: [5, 5],
+                filename: `جدول_الحفظ_${appState.weekNumber}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            html2pdf().from(element).set(opt).save().then(() => {
+                btn.innerHTML = originalText;
+                btnMobile.innerHTML = '<span>تحميل الجدول PDF</span>';
+            });
+        }
+    </script>
+</body>
+</html>
