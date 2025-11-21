@@ -67,10 +67,17 @@
                 </div>
             </div>
             
-            <button onclick="downloadImage()" id="downloadBtn" class="hidden md:flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-full text-sm font-bold shadow-emerald-200 shadow-lg transition-all active:scale-95 disabled:opacity-50">
-                <span>تحميل صورة</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            </button>
+            <div class="flex items-center gap-2">
+                <!-- زر الدعم عبر InstaPay (تم التعديل: إزالة الأيقونة وتغيير النص) -->
+                <a href="https://ipn.eg/S/shaba1/instapay/0e3P4q" target="_blank" class="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full text-sm font-bold shadow-lg transition-all active:scale-95 hover:shadow-purple-200">
+                    <span>دعم ب Instapay</span>
+                </a>
+
+                <button onclick="downloadImage()" id="downloadBtn" class="hidden md:flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-full text-sm font-bold shadow-emerald-200 shadow-lg transition-all active:scale-95 disabled:opacity-50">
+                    <span>تحميل صورة</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -131,9 +138,15 @@
             </div>
 
             <!-- زر الموبايل -->
-            <button onclick="downloadImage()" id="downloadBtnMobile" class="w-full md:hidden flex items-center justify-center gap-2 bg-emerald-600 text-white p-4 rounded-xl font-bold shadow-lg">
-                <span>تحميل الجدول كصورة</span>
-            </button>
+            <div class="space-y-3 md:hidden">
+                <button onclick="downloadImage()" id="downloadBtnMobile" class="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white p-4 rounded-xl font-bold shadow-lg">
+                    <span>تحميل الجدول كصورة</span>
+                </button>
+                
+                 <a href="https://ipn.eg/S/shaba1/instapay/0e3P4q" target="_blank" class="w-full flex items-center justify-center gap-2 bg-purple-600 text-white p-3 rounded-xl font-bold shadow-lg">
+                    <span>دعم ب Instapay</span>
+                </a>
+            </div>
         </div>
 
         <!-- --- قسم المعاينة (الورقة A4) --- -->
@@ -198,7 +211,7 @@
 
                 <!-- التذييل -->
                 <div class="mt-4 flex justify-between items-end opacity-60">
-                    <div class="text-xs text-slate-400"> لا تنسوا الدعاء لصاحبها بالهداية </div>
+                    <div class="text-xs text-slate-400">تم الإنشاء بواسطة منصة جداول الحفظ</div>
                     <div class="flex gap-1">
                         <div class="w-2 h-2 rounded-full bg-emerald-200"></div>
                         <div class="w-2 h-2 rounded-full bg-blue-200"></div>
