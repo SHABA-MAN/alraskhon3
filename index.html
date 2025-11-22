@@ -130,7 +130,7 @@
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-800 pb-24">
 
-    <!-- Modal & Header code same as before -->
+    <!-- Modal -->
     <div id="instapayModal" class="modal-overlay">
         <div class="card-scene">
             <div id="cardObject" class="card-object">
@@ -180,16 +180,19 @@
         <!-- Editor Section -->
         <div class="lg:col-span-4 space-y-6 order-2 lg:order-1">
             
-            <!-- قسم المساعد الذكي (Gemini) -->
+            <!-- قسم التبديل الذكي (بدون مفتاح API) -->
             <div class="ai-box p-5 rounded-2xl shadow-sm relative overflow-hidden">
                 <div class="flex items-center gap-2 mb-3 text-sky-700 font-bold">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 12 2.1 12a10.1 10.1 0 0 0 3.8 5.8"/></svg>
-                   -لترتيب الأيام فقط- المساعد الذكي
+                    <!-- أيقونة بسيطة -->
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
+                    ترتيب الأيام (ذكي)
                 </div>
+                
                 <div class="relative">
-                    <input type="text" id="aiInput" class="w-full px-4 py-2.5 pl-10 bg-white/80 border border-sky-200 rounded-xl focus:ring-2 focus:ring-sky-400 focus:border-sky-400 outline-none text-sm" placeholder="مثال: خلي بداية الأسبوع يوم الاثنين">
-                    <button onclick="askGemini()" id="aiBtn" class="absolute left-1.5 top-1.5 p-1.5 bg-sky-500 hover:bg-sky-600 text-white rounded-lg transition-colors shadow-sm">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 12z"/><path d="M21 3v9h-9"/></svg>
+                    <!-- عند الضغط على Enter يتم التنفيذ -->
+                    <input type="text" id="aiInput" onkeydown="if(event.key === 'Enter') smartReorder()" class="w-full px-4 py-2.5 pl-10 bg-white/80 border border-sky-200 rounded-xl focus:ring-2 focus:ring-sky-400 focus:border-sky-400 outline-none text-sm" placeholder="مثال: ابدأ بـ يوم الأحد">
+                    <button onclick="smartReorder()" id="aiBtn" class="absolute left-1.5 top-1.5 p-1.5 bg-sky-500 hover:bg-sky-600 text-white rounded-lg transition-colors shadow-sm">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                     </button>
                 </div>
                 <p id="aiStatus" class="text-[10px] text-sky-600 mt-2 h-4"></p>
@@ -325,8 +328,6 @@
     </main>
 
     <script>
-        const apiKey = ""; // API key handles by environment
-
         let appState = {
             studentName: 'عمرو',
             groupNumber: '1',
@@ -354,46 +355,29 @@
             window.addEventListener('resize', fitPreviewToScreen);
         });
 
-        // --- Gemini Logic ---
-        async function askGemini() {
+        // --- Smart Reorder (LOCAL - No API Key) ---
+        function smartReorder() {
             const input = document.getElementById('aiInput').value;
             const status = document.getElementById('aiStatus');
-            const btn = document.getElementById('aiBtn');
+            
+            if (!input) return;
 
-            if(!input) return;
-
-            status.innerText = 'جاري التفكير...';
-            btn.disabled = true;
-            btn.classList.add('opacity-50');
-
-            try {
-                const prompt = `Extract the starting day of the week from this Arabic text: "${input}". Return only the day name in Arabic from this list: (السبت, الأحد, الاثنين, الثلاثاء, الأربعاء, الخميس, الجمعة). If not found or unclear, return "null".`;
-                
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                });
-
-                const data = await response.json();
-                const day = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-
-                if (day && daysOfWeek.includes(day)) {
-                    reorderDays(day);
-                    status.innerText = `تم تعديل البداية إلى: ${day}`;
-                    status.className = "text-[10px] text-green-600 mt-2 h-4 font-bold";
-                } else {
-                    status.innerText = 'لم أستطع فهم اليوم المحدد، حاول مرة أخرى.';
-                    status.className = "text-[10px] text-red-600 mt-2 h-4";
+            // البحث عن اسم اليوم في النص
+            let foundDay = null;
+            for (const day of daysOfWeek) {
+                if (input.includes(day)) {
+                    foundDay = day;
+                    break;
                 }
+            }
 
-            } catch (error) {
-                console.error(error);
-                status.innerText = 'حدث خطأ في الاتصال.';
+            if (foundDay) {
+                reorderDays(foundDay);
+                status.innerText = `تم تعديل البداية إلى: ${foundDay}`;
+                status.className = "text-[10px] text-green-600 mt-2 h-4 font-bold";
+            } else {
+                status.innerText = 'لم أتمكن من فهم اليوم، يرجى كتابته بوضوح (مثلاً: السبت)';
                 status.className = "text-[10px] text-red-600 mt-2 h-4";
-            } finally {
-                btn.disabled = false;
-                btn.classList.remove('opacity-50');
             }
         }
 
@@ -401,13 +385,13 @@
             const startIndex = daysOfWeek.indexOf(startDay);
             if (startIndex === -1) return;
 
-            // Create new ordered array of days
+            // إعادة ترتيب مصفوفة الأيام
             const newOrder = [
                 ...daysOfWeek.slice(startIndex),
                 ...daysOfWeek.slice(0, startIndex)
             ];
 
-            // Update appState rows with new day names (preserving content order 1st day -> 1st content)
+            // تحديث الجدول بالترتيب الجديد
             appState.rows.forEach((row, index) => {
                 row.day = newOrder[index];
             });
@@ -416,7 +400,8 @@
             renderPreview();
         }
 
-        // --- UI Logic ---
+        // ... Rest of functions ...
+
         function openInstaPayEffect() {
             const modal = document.getElementById('instapayModal');
             const card = document.getElementById('cardObject');
