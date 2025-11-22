@@ -407,14 +407,17 @@
                 
                 // 3. Redirect after reading message
                 setTimeout(() => {
+                    // FIX: استخدام location.href بدلاً من window.open
+                    // هذا ضروري لكي يعمل الـ Deep Link على الآيفون ويفتح التطبيق
                     window.location.href = 'https://ipn.eg/S/shaba1/instapay/0e3P4q';
                     
+                    // 4. Close modal after redirect (optional)
                     setTimeout(() => {
                         modal.classList.remove('active');
                         card.classList.remove('flipped');
                     }, 2000);
-                }, 2500);
-            }, 600);
+                }, 2500); // Wait 2.5 seconds reading time
+            }, 600); // Wait 0.6s for entry animation
         }
 
         // --- Core Functions ---
@@ -492,6 +495,49 @@
             });
         }
 
+        function renderPreview() {
+            document.getElementById('previewName').innerText = appState.studentName;
+            document.getElementById('previewWeek').innerText = appState.weekNumber;
+            document.getElementById('previewFarPast').innerText = appState.farPast;
+            document.getElementById('previewNearPast').innerText = appState.nearPast;
+            document.getElementById('previewPrep').innerText = appState.preparation;
+
+            const daysCol = document.getElementById('previewDaysCol');
+            const hifzCol = document.getElementById('previewNewHifzCol');
+            daysCol.innerHTML = '';
+            hifzCol.innerHTML = '';
+
+            appState.rows.forEach(row => {
+                daysCol.innerHTML += `
+                    <div class="flex-1 flex items-center justify-center border-b border-slate-300 last:border-b-0 font-bold text-slate-700 text-lg">
+                        ${row.day}
+                    </div>
+                `;
+
+                let content = '';
+                if (row.type === 'range') {
+                    content = `
+                        <div class="flex items-center gap-3 text-emerald-700 text-2xl font-bold dir-ltr">
+                            <span class="w-10 text-center font-serif">${row.from || '?'}</span>
+                            <span class="text-emerald-300 text-xl">←</span>
+                            <span class="w-10 text-center font-serif">${row.to || '?'}</span>
+                        </div>
+                    `;
+                } else {
+                    content = `
+                        <span class="font-bold text-emerald-800 text-xl leading-tight">
+                            ${row.text || ''}
+                        </span>
+                    `;
+                }
+                hifzCol.innerHTML += `
+                    <div class="flex-1 flex items-center justify-center text-center border-b border-slate-300 last:border-b-0 p-1 bg-white">
+                        ${content}
+                    </div>
+                `;
+            });
+        }
+
         function downloadImage() {
             const element = document.getElementById('pdfContent');
             const btn = document.getElementById('downloadBtn');
@@ -499,58 +545,12 @@
 
             btn.innerHTML = '<span class="animate-pulse">جاري المعالجة...</span>';
             
-            // 1. Reset Scale for High Quality Capture
             const currentTransform = element.style.transform;
             element.style.transform = 'scale(1)';
             
-            setTimeout(async () => {
-                try {
-                    await document.fonts.ready;
-
-                    // 2. RASTERIZE VERTICAL TEXT (Fix for iOS/Arabic Rotation Issue)
-                    const verticalElements = element.querySelectorAll('.vertical-text');
-                    const swaps = [];
-
-                    // Convert each vertical text to an image horizontally first
-                    for (let el of verticalElements) {
-                        // Create a temporary horizontal clone
-                        const clone = el.cloneNode(true);
-                        clone.style.transform = 'none'; // Remove rotation
-                        clone.style.position = 'fixed';
-                        clone.style.top = '-9999px';
-                        clone.style.left = '-9999px';
-                        clone.style.width = '540px'; // Keep original width
-                        clone.style.height = 'auto';
-                        clone.style.textAlign = 'center';
-                        clone.style.background = 'transparent';
-                        clone.className = 'text-2xl font-bold leading-relaxed'; // Ensure styling matches
-                        // Explicitly set color if needed, or let it inherit
-                        
-                        document.body.appendChild(clone);
-
-                        // Capture text as image
-                        const textCanvas = await html2canvas(clone, {
-                            backgroundColor: null,
-                            scale: 2
-                        });
-                        
-                        document.body.removeChild(clone);
-
-                        // Save original state
-                        swaps.push({ el, oldHTML: el.innerHTML });
-
-                        // Replace text with image
-                        const img = document.createElement('img');
-                        img.src = textCanvas.toDataURL();
-                        img.style.width = '100%';
-                        img.style.height = 'auto';
-                        
-                        el.innerHTML = '';
-                        el.appendChild(img);
-                    }
-
-                    // 3. Capture the Main Table (now with images instead of rotated text)
-                    const canvas = await html2canvas(element, {
+            setTimeout(() => {
+                document.fonts.ready.then(() => {
+                    html2canvas(element, {
                         scale: 2,
                         useCORS: true,
                         backgroundColor: '#ffffff',
@@ -558,26 +558,23 @@
                         allowTaint: true,
                         logging: false,
                         width: element.offsetWidth,
-                        height: element.offsetHeight
+                        height: element.offsetHeight,
+                        windowWidth: element.offsetWidth, 
+                        windowHeight: element.offsetHeight
+                    }).then(canvas => {
+                        const link = document.createElement('a');
+                        link.download = `جدول_الحفظ_${appState.weekNumber}.jpg`;
+                        link.href = canvas.toDataURL('image/jpeg', 0.95);
+                        link.click();
+                        element.style.transform = currentTransform;
+                        btn.innerHTML = originalText;
+                    }).catch(err => {
+                        console.error("Error:", err);
+                        alert("حدث خطأ أثناء إنشاء الصورة.");
+                        element.style.transform = currentTransform;
+                        btn.innerHTML = originalText;
                     });
-
-                    // 4. Download
-                    const link = document.createElement('a');
-                    link.download = `جدول_الحفظ_${appState.weekNumber}.jpg`;
-                    link.href = canvas.toDataURL('image/jpeg', 0.95);
-                    link.click();
-
-                    // 5. Restore Original Text
-                    swaps.forEach(s => s.el.innerHTML = s.oldHTML);
-
-                } catch (err) {
-                    console.error("Error:", err);
-                    alert("حدث خطأ أثناء إنشاء الصورة.");
-                } finally {
-                    // Restore UI
-                    element.style.transform = currentTransform;
-                    btn.innerHTML = originalText;
-                }
+                });
             }, 100);
         }
     </script>
