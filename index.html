@@ -27,6 +27,10 @@
             position: relative;
             height: 100%;
             overflow: hidden;
+            /* إعدادات للتأكد من توسط الصورة البديلة */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         .vertical-text {
             position: absolute;
@@ -38,12 +42,9 @@
             white-space: pre-wrap;
             direction: rtl;
             line-height: 1.8;
-            /* تحسينات لمحاولة منع التقطع */
-            text-rendering: geometricPrecision;
-            -webkit-font-smoothing: antialiased;
         }
 
-        /* --- حجم الورقة (تم الاحتفاظ بالتعديل الذي يجعلها ملمومة) --- */
+        /* --- حجم الورقة (ملموم كما طلبت) --- */
         #pdfContent {
             width: 250mm !important;
             min-width: 250mm !important;
@@ -321,18 +322,19 @@
                         <div class="flex h-[550px]">
                             <div class="w-[10%] flex flex-col border-l-2 border-slate-800 bg-slate-50/30" id="previewDaysCol"></div>
 
+                            <!-- نستخدم data-color لتحديد لون النص لدالة الرسم -->
                             <div class="w-[15%] border-l-2 border-slate-800 bg-white vertical-cell">
-                                <div id="previewFarPast" class="vertical-text font-bold text-2xl text-blue-900"></div>
+                                <div id="previewFarPast" class="vertical-text font-bold text-2xl text-blue-900" data-color="#1e3a8a"></div>
                             </div>
 
                             <div class="w-[25%] border-l-2 border-slate-800 bg-white vertical-cell">
-                                 <div id="previewNearPast" class="vertical-text font-bold text-2xl text-indigo-900"></div>
+                                 <div id="previewNearPast" class="vertical-text font-bold text-2xl text-indigo-900" data-color="#312e81"></div>
                             </div>
 
                             <div class="w-[25%] flex flex-col border-l-2 border-slate-800" id="previewNewHifzCol"></div>
 
                             <div class="w-[25%] bg-emerald-50/10 vertical-cell">
-                                 <div id="previewPrep" class="vertical-text font-bold text-xl text-slate-800"></div>
+                                 <div id="previewPrep" class="vertical-text font-bold text-xl text-slate-800" data-color="#1e293b"></div>
                             </div>
                         </div>
                     </div>
@@ -475,9 +477,18 @@
         function renderPreview() {
             document.getElementById('previewName').innerText = appState.studentName;
             document.getElementById('previewWeek').innerText = appState.weekNumber;
-            document.getElementById('previewFarPast').innerText = appState.farPast;
-            document.getElementById('previewNearPast').innerText = appState.nearPast;
-            document.getElementById('previewPrep').innerText = appState.preparation;
+            
+            const farPastEl = document.getElementById('previewFarPast');
+            farPastEl.innerText = appState.farPast;
+            farPastEl.setAttribute('data-text', appState.farPast); // Save for canvas drawing
+
+            const nearPastEl = document.getElementById('previewNearPast');
+            nearPastEl.innerText = appState.nearPast;
+            nearPastEl.setAttribute('data-text', appState.nearPast);
+
+            const prepEl = document.getElementById('previewPrep');
+            prepEl.innerText = appState.preparation;
+            prepEl.setAttribute('data-text', appState.preparation);
 
             const daysCol = document.getElementById('previewDaysCol');
             const hifzCol = document.getElementById('previewNewHifzCol');
@@ -515,46 +526,135 @@
             });
         }
 
-        function downloadImage() {
+        // --- Helper: Draw Vertical Text manually on Canvas ---
+        function drawVerticalText(text, color) {
+            if (!text) return null;
+            
+            // 1. Draw Horizontal
+            const tempCanvas = document.createElement('canvas');
+            const ctx = tempCanvas.getContext('2d');
+            const width = 540; // Visual height in table
+            const height = 250; // Auto height approx
+
+            tempCanvas.width = width;
+            tempCanvas.height = height;
+
+            ctx.direction = 'rtl';
+            ctx.font = 'bold 24px "Cairo", sans-serif';
+            ctx.fillStyle = color;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            const lines = text.split('\n');
+            const lineHeight = 45;
+            const startY = (height - ((lines.length - 1) * lineHeight)) / 2;
+
+            lines.forEach((line, i) => {
+                ctx.fillText(line, width / 2, startY + (i * lineHeight));
+            });
+
+            // 2. Rotate onto final canvas
+            const finalCanvas = document.createElement('canvas');
+            finalCanvas.width = height; // Becomes width in vertical cell
+            finalCanvas.height = width; // Becomes height in vertical cell
+            const fCtx = finalCanvas.getContext('2d');
+
+            // Translate to bottom-left corner, rotate -90deg
+            fCtx.translate(0, width);
+            fCtx.rotate(-Math.PI / 2);
+            fCtx.drawImage(tempCanvas, 0, 0);
+            
+            return finalCanvas.toDataURL();
+        }
+
+        async function downloadImage() {
             const element = document.getElementById('pdfContent');
             const btn = document.getElementById('downloadBtn');
             const originalText = btn.innerHTML;
 
             btn.innerHTML = '<span class="animate-pulse">جاري المعالجة...</span>';
             btn.disabled = true;
-            
-            // 1. Reset Scale for High Quality Capture
+
             const currentTransform = element.style.transform;
             element.style.transform = 'scale(1)';
-            
-            setTimeout(() => {
-                document.fonts.ready.then(() => {
-                    html2canvas(element, {
-                        scale: 3, // جودة أعلى
-                        useCORS: true,
-                        backgroundColor: '#ffffff',
-                        scrollY: -window.scrollY,
-                        // allowTaint: false, // نتركه افتراضي أفضل
-                        logging: false,
-                        width: element.offsetWidth,
-                        height: element.offsetHeight,
-                        windowWidth: element.offsetWidth, 
-                        windowHeight: element.offsetHeight
-                    }).then(canvas => {
-                        const link = document.createElement('a');
-                        link.download = `جدول_الحفظ_${appState.weekNumber}.jpg`;
-                        link.href = canvas.toDataURL('image/jpeg', 0.95);
-                        link.click();
-                    }).catch(err => {
-                        console.error("Error:", err);
-                        alert("حدث خطأ أثناء إنشاء الصورة.");
-                    }).finally(() => {
-                        element.style.transform = currentTransform;
-                        btn.innerHTML = originalText;
-                        btn.disabled = false;
-                    });
+
+            try {
+                await document.fonts.ready;
+
+                // 1. Manually Render Vertical Text to Images
+                const verticalElements = document.querySelectorAll('.vertical-text');
+                const restoreTasks = [];
+
+                verticalElements.forEach(el => {
+                    const text = el.getAttribute('data-text') || el.innerText;
+                    const color = el.getAttribute('data-color') || '#1e293b'; // Default slate-800
+                    
+                    // Generate Image
+                    const dataUrl = drawVerticalText(text, color);
+                    
+                    if (dataUrl) {
+                        // Save state
+                        const originalHTML = el.innerHTML;
+                        const originalStyle = el.getAttribute('style');
+
+                        // Replace with image
+                        const img = document.createElement('img');
+                        img.src = dataUrl;
+                        // Remove rotation transform from parent DIV, let the image be the rotation
+                        // ACTUALLY: The drawing logic above created a ROTATED image.
+                        // So we need to display it without CSS rotation.
+                        
+                        // Remove CSS class that rotates it
+                        el.classList.remove('vertical-text');
+                        el.style.position = 'absolute';
+                        el.style.top = '0';
+                        el.style.left = '0';
+                        el.style.width = '100%';
+                        el.style.height = '100%';
+                        el.style.display = 'flex';
+                        el.style.alignItems = 'center';
+                        el.style.justifyContent = 'center';
+                        el.style.transform = 'none'; // Important: Reset CSS transform
+                        
+                        el.innerHTML = '';
+                        el.appendChild(img);
+
+                        restoreTasks.push(() => {
+                            el.innerHTML = originalHTML;
+                            el.classList.add('vertical-text');
+                            if (originalStyle) el.setAttribute('style', originalStyle);
+                            else el.removeAttribute('style');
+                        });
+                    }
                 });
-            }, 200);
+
+                // 2. Capture
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    scrollY: -window.scrollY,
+                    logging: false,
+                    width: element.offsetWidth,
+                    height: element.offsetHeight
+                });
+
+                const link = document.createElement('a');
+                link.download = `جدول_الحفظ_${appState.weekNumber}.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 0.95);
+                link.click();
+
+                // 3. Restore
+                restoreTasks.forEach(t => t());
+
+            } catch (err) {
+                console.error(err);
+                alert("حدث خطأ أثناء إنشاء الصورة.");
+            } finally {
+                element.style.transform = currentTransform;
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
         }
     </script>
 </body>
