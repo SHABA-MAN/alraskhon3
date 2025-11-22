@@ -376,13 +376,13 @@
             nearPast: 'تسميع من أول سورة البقرة إلى آية ٢٥ يومياً',
             preparation: '(( تلاوة ربع ))\n(( أتأمرون الناس بالبر ))\nوالصلاة بالمحفوظ على مدار اليوم',
             rows: [
-                { day: 'الجمعة', type: 'range', from: '٢٦', to: '٢٨', text: '' },
-                { day: 'السبت', type: 'range', from: '٢٦', to: '٣٣', text: '' },
-                { day: 'الأحد', type: 'range', from: '٢٦', to: '٣٨', text: '' },
-                { day: 'الاثنين', type: 'range', from: '٢٦', to: '٤٣', text: '' },
-                { day: 'الثلاثاء', type: 'text', from: '', to: '', text: 'تسميع الربع (٣) مرات' },
-                { day: 'الأربعاء', type: 'text', from: '', to: '', text: 'تسميع الربع (٥) مرات' },
-                { day: 'الخميس', type: 'text', from: '', to: '', text: 'تسميع(٧) مرات ' },
+                { day: 'السبت', type: 'range', from: '٢٦', to: '٢٨', text: '' },
+                { day: 'الأحد', type: 'range', from: '٢٦', to: '٣٣', text: '' },
+                { day: 'الاثنين', type: 'range', from: '٢٦', to: '٣٨', text: '' },
+                { day: 'الثلاثاء', type: 'range', from: '٢٦', to: '٤٣', text: '' },
+                { day: 'الأربعاء', type: 'text', from: '', to: '', text: 'تسميع الربع (٣) مرات' },
+                { day: 'الخميس', type: 'text', from: '', to: '', text: 'تسميع الربع (٥) مرات' },
+                { day: 'الجمعة', type: 'text', from: '', to: '', text: 'تسميع (٧) مرات' },
             ]
         };
 
@@ -407,7 +407,9 @@
                 
                 // 3. Redirect after reading message
                 setTimeout(() => {
-                    window.open('https://ipn.eg/S/shaba1/instapay/0e3P4q', '_blank');
+                    // FIX: استخدام location.href بدلاً من window.open
+                    // هذا ضروري لكي يعمل الـ Deep Link على الآيفون ويفتح التطبيق
+                    window.location.href = 'https://ipn.eg/S/shaba1/instapay/0e3P4q';
                     
                     // 4. Close modal after redirect (optional)
                     setTimeout(() => {
