@@ -33,17 +33,18 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) rotate(-90deg);
-            /* تم تعديل عرض النص قليلاً ليتناسب مع الارتفاع الجديد إذا لزم الأمر، لكن 540px مناسب */
             width: 540px; 
             text-align: center;
             white-space: pre-wrap;
             direction: rtl;
             line-height: 1.8;
+            /* تحسينات لمحاولة منع التقطع */
+            text-rendering: geometricPrecision;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* --- تعديل حجم الورقة لتكون أقل عرضاً وأكثر تناسقاً --- */
+        /* --- حجم الورقة (تم الاحتفاظ بالتعديل الذي يجعلها ملمومة) --- */
         #pdfContent {
-            /* تم تقليل العرض من 297mm إلى 250mm لتقليل العرض الزائد */
             width: 250mm !important;
             min-width: 250mm !important;
             min-height: 210mm !important;
@@ -58,7 +59,7 @@
             position: fixed;
             bottom: 20px;
             left: 20px;
-            z-index: 40; /* أقل من المودال */
+            z-index: 40;
             width: 60px;
             height: 60px;
             border-radius: 50%;
@@ -115,7 +116,7 @@
             position: relative;
             transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
             transform-style: preserve-3d;
-            transform: scale(0.8); /* يبدأ صغيراً */
+            transform: scale(0.8);
             opacity: 0;
         }
         
@@ -132,7 +133,7 @@
             position: absolute;
             width: 100%;
             height: 100%;
-            backface-visibility: hidden; /* يخفي الوجه الخلفي */
+            backface-visibility: hidden;
             border-radius: 20px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.3);
             display: flex;
@@ -143,14 +144,12 @@
             text-align: center;
         }
 
-        /* الوجه الأمامي (شعار انستا باي) */
         .card-front {
             background: linear-gradient(135deg, #4c1d95, #7e22ce);
             color: white;
             border: 2px solid rgba(255,255,255,0.2);
         }
 
-        /* الوجه الخلفي (الرسالة) */
         .card-back {
             background: white;
             transform: rotateY(180deg);
@@ -158,7 +157,6 @@
             border: 4px solid #7e22ce;
         }
 
-        /* دائرة التحميل */
         .spinner {
             width: 24px;
             height: 24px;
@@ -178,9 +176,7 @@
     <div id="instapayModal" class="modal-overlay">
         <div class="card-scene">
             <div id="cardObject" class="card-object">
-                <!-- الوجه الأمامي -->
                 <div class="card-face card-front">
-                    <!-- شعار تقريبي لانستا باي -->
                     <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-3">
                         <rect x="2" y="6" width="20" height="12" rx="2"/>
                         <circle cx="12" cy="12" r="2"/>
@@ -190,7 +186,6 @@
                     <p class="text-sm opacity-80 mt-1">دعم آمن وسريع</p>
                 </div>
 
-                <!-- الوجه الخلفي -->
                 <div class="card-face card-back">
                     <h3 class="text-lg font-bold mb-2">شكراً لدعمكم ❤️</h3>
                     <p class="text-sm text-slate-600 leading-relaxed">
@@ -224,7 +219,7 @@
         </div>
     </header>
 
-    <!-- --- زر الدعم العائم (تم تعديله لفتح المودال) --- -->
+    <!-- --- زر الدعم العائم --- -->
     <div onclick="openInstaPayEffect()" class="fab-btn" title="دعم ب Instapay">
         <svg class="plane-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="22" y1="2" x2="11" y2="13"></line>
@@ -234,7 +229,7 @@
 
     <main class="max-w-6xl mx-auto p-4 md:p-8 gap-8 grid grid-cols-1 lg:grid-cols-12">
         
-        <!-- --- قسم التعديل والأدوات --- -->
+        <!-- --- قسم التعديل --- -->
         <div class="lg:col-span-4 space-y-6 order-2 lg:order-1">
             
             <!-- بيانات الطالب -->
@@ -289,11 +284,10 @@
             </div>
         </div>
 
-        <!-- --- قسم المعاينة (الورقة A4) --- -->
+        <!-- --- قسم المعاينة --- -->
         <div class="lg:col-span-8 order-1 lg:order-2">
             <div id="previewContainer" class="bg-slate-200/50 rounded-3xl p-2 md:p-8 border border-slate-200/60 flex items-start justify-center overflow-hidden min-h-[300px]">
                 
-                <!-- الورقة نفسها -->
                 <div id="pdfContent" class="bg-white shadow-xl relative box-border p-8 origin-top" style="font-family: 'Amiri', 'Cairo', serif;">
                     
                     <!-- رأس الجدول -->
@@ -316,7 +310,6 @@
 
                     <!-- الجدول الرئيسي -->
                     <div class="w-full border-2 border-slate-800 rounded-lg overflow-hidden shadow-sm">
-                        <!-- الترويسة -->
                         <div class="flex bg-emerald-50/80 border-b-2 border-slate-800 font-bold text-slate-800">
                             <div class="w-[10%] p-3 text-center border-l-2 border-slate-800">اليوم</div>
                             <div class="w-[15%] p-3 text-center border-l-2 border-slate-800">الماضي البعيد</div>
@@ -325,26 +318,19 @@
                             <div class="w-[25%] p-3 text-center">التحضير</div>
                         </div>
 
-                        <!-- المحتوى -->
                         <div class="flex h-[550px]">
-                            
-                            <!-- 1. الأيام -->
                             <div class="w-[10%] flex flex-col border-l-2 border-slate-800 bg-slate-50/30" id="previewDaysCol"></div>
 
-                            <!-- 2. الماضي البعيد -->
                             <div class="w-[15%] border-l-2 border-slate-800 bg-white vertical-cell">
                                 <div id="previewFarPast" class="vertical-text font-bold text-2xl text-blue-900"></div>
                             </div>
 
-                            <!-- 3. الماضي القريب -->
                             <div class="w-[25%] border-l-2 border-slate-800 bg-white vertical-cell">
                                  <div id="previewNearPast" class="vertical-text font-bold text-2xl text-indigo-900"></div>
                             </div>
 
-                            <!-- 4. الحفظ الجديد -->
                             <div class="w-[25%] flex flex-col border-l-2 border-slate-800" id="previewNewHifzCol"></div>
 
-                            <!-- 5. التحضير -->
                             <div class="w-[25%] bg-emerald-50/10 vertical-cell">
                                  <div id="previewPrep" class="vertical-text font-bold text-xl text-slate-800"></div>
                             </div>
@@ -397,27 +383,18 @@
         function openInstaPayEffect() {
             const modal = document.getElementById('instapayModal');
             const card = document.getElementById('cardObject');
-            
-            // 1. Show Modal Background
             modal.classList.add('active');
             
-            // 2. Wait slightly then Flip the card
             setTimeout(() => {
                 card.classList.add('flipped');
-                
-                // 3. Redirect after reading message
                 setTimeout(() => {
-                    // FIX: استخدام location.href بدلاً من window.open
-                    // هذا ضروري لكي يعمل الـ Deep Link على الآيفون ويفتح التطبيق
                     window.location.href = 'https://ipn.eg/S/shaba1/instapay/0e3P4q';
-                    
-                    // 4. Close modal after redirect (optional)
                     setTimeout(() => {
                         modal.classList.remove('active');
                         card.classList.remove('flipped');
                     }, 2000);
-                }, 2500); // Wait 2.5 seconds reading time
-            }, 600); // Wait 0.6s for entry animation
+                }, 2500);
+            }, 600);
         }
 
         // --- Core Functions ---
@@ -544,18 +521,20 @@
             const originalText = btn.innerHTML;
 
             btn.innerHTML = '<span class="animate-pulse">جاري المعالجة...</span>';
+            btn.disabled = true;
             
+            // 1. Reset Scale for High Quality Capture
             const currentTransform = element.style.transform;
             element.style.transform = 'scale(1)';
             
             setTimeout(() => {
                 document.fonts.ready.then(() => {
                     html2canvas(element, {
-                        scale: 2,
+                        scale: 3, // جودة أعلى
                         useCORS: true,
                         backgroundColor: '#ffffff',
                         scrollY: -window.scrollY,
-                        allowTaint: true,
+                        // allowTaint: false, // نتركه افتراضي أفضل
                         logging: false,
                         width: element.offsetWidth,
                         height: element.offsetHeight,
@@ -566,16 +545,16 @@
                         link.download = `جدول_الحفظ_${appState.weekNumber}.jpg`;
                         link.href = canvas.toDataURL('image/jpeg', 0.95);
                         link.click();
-                        element.style.transform = currentTransform;
-                        btn.innerHTML = originalText;
                     }).catch(err => {
                         console.error("Error:", err);
                         alert("حدث خطأ أثناء إنشاء الصورة.");
+                    }).finally(() => {
                         element.style.transform = currentTransform;
                         btn.innerHTML = originalText;
+                        btn.disabled = false;
                     });
                 });
-            }, 100);
+            }, 200);
         }
     </script>
 </body>
