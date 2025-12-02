@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة جداول الحفظ</title>
+    <title>انشاء جدول حفظ</title>
     
     <!-- استيراد Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- استيراد الخطوط (تم إضافة Tajawal حسب الثيم الجديد) -->
+    <!-- استيراد الخطوط -->
     <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;600&display=swap" rel="stylesheet">
     
     <!-- html2canvas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
-        /* --- متغيرات الثيم الجديد --- */
+        /* --- متغيرات الثيم --- */
         :root {
             --primary-gold: #c5a059;
             --primary-dark: #1a3c34;
@@ -36,14 +36,6 @@
         .scrollbar-thin::-webkit-scrollbar { width: 6px; }
         .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
         .scrollbar-thin::-webkit-scrollbar-thumb { background-color: var(--primary-gold); border-radius: 20px; }
-
-        /* --- تأثيرات الثيم --- */
-        .golden-gradient {
-            background: linear-gradient(135deg, #b8860b 0%, #eec96d 50%, #b8860b 100%);
-        }
-        .card-shadow {
-            box-shadow: 0 10px 30px -10px rgba(26, 60, 52, 0.15);
-        }
 
         /* --- تنسيق النص العمودي --- */
         .vertical-cell {
@@ -87,7 +79,6 @@
             width: 60px;
             height: 60px;
             border-radius: 50%;
-            /* تحديث لون الزر ليتناسب مع الثيم (بنفسجي غامق يتماشى مع انستا باي) */
             background: linear-gradient(135deg, #4c1d95, #6d28d9);
             box-shadow: 0 10px 25px -5px rgba(76, 29, 149, 0.5);
             display: flex;
@@ -112,7 +103,7 @@
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(26, 60, 52, 0.8); /* خلفية زيتي غامق شفاف */
+            background: rgba(26, 60, 52, 0.8);
             backdrop-filter: blur(8px);
             z-index: 9999;
             display: flex;
@@ -145,11 +136,19 @@
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         
-        /* AI Box Styles - Themed */
+        /* AI Box Styles */
         .ai-box {
             background: linear-gradient(135deg, #f0ebe0 0%, #fffdf9 100%);
             border: 1px solid rgba(197, 160, 89, 0.3);
         }
+
+        /* Toggle Styles */
+        .toggle-checkbox:checked { right: 0; border-color: #1a3c34; }
+        .toggle-checkbox:checked + .toggle-label { background-color: #1a3c34; }
+        .toggle-checkbox { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+        .toggle-label { width: 36px; height: 20px; background-color: #ccc; display: block; border-radius: 100px; position: relative; cursor: pointer; transition: background-color 0.3s; }
+        .toggle-label:after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: #fff; border-radius: 90px; transition: 0.3s; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .toggle-checkbox:checked + .toggle-label:after { left: calc(100% - 2px); transform: translateX(-100%); }
     </style>
 </head>
 <body class="min-h-screen pb-24">
@@ -176,10 +175,9 @@
         </div>
     </div>
 
-    <!-- Header Themed -->
+    <!-- Header -->
     <header class="bg-[#1a3c34] text-[#f9f7f2] sticky top-0 z-50 shadow-lg border-b-4 border-[#c5a059]">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between relative overflow-hidden">
-            <!-- زخرفة خلفية الهيدر -->
             <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;"></div>
             
             <div class="flex items-center gap-3 relative z-10">
@@ -187,10 +185,10 @@
                     <img src="/logo.jpg" onerror="this.src='https://via.placeholder.com/150/1a3c34/c5a059?text=Quran'" alt="شعار الموقع" class="w-14 h-14 rounded-full border-2 border-[#c5a059] shadow-md object-cover bg-white p-0.5">
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold leading-tight text-[#eec96d] historical-font">منصة جداول الحفظ</h1>
+                    <h1 class="text-xl font-bold leading-tight text-[#eec96d] historical-font">انشاء جدول حفظ</h1>
                     <p class="text-xs text-emerald-100/80 font-light flex items-center gap-1">
                         <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5 4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                        هدية من فريق الجبال الرواسي
+                        هدية من مجموعة الجبال الرواسي
                     </p>
                 </div>
             </div>
@@ -211,7 +209,7 @@
         <!-- Editor Section -->
         <div class="lg:col-span-4 space-y-6 order-2 lg:order-1">
             
-            <!-- قسم التبديل الذكي -->
+            <!-- Smart Order -->
             <div class="ai-box p-5 rounded-2xl shadow-sm relative overflow-hidden card-shadow">
                 <div class="flex items-center gap-2 mb-3 text-[#1a3c34] font-bold">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
@@ -236,15 +234,15 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-bold text-[#5d4037] mb-1.5">اسم الطالب</label>
-                        <input type="text" id="inputName" oninput="updateData()" class="w-full px-4 py-2.5 bg-[#f9f7f2] border border-[#d1d5db] rounded-xl focus:ring-1 focus:ring-[#c5a059] focus:border-[#c5a059] outline-none text-[#1a3c34]" value="عمرو">
+                        <input type="text" id="inputName" oninput="updateData()" class="w-full px-4 py-3 bg-[#f9f7f2] border border-[#d1d5db] rounded-xl focus:ring-1 focus:ring-[#c5a059] focus:border-[#c5a059] outline-none text-[#1a3c34] text-base" value="عمرو">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-[#5d4037] mb-1.5">رقم المجموعة</label>
-                        <input type="text" id="inputGroup" oninput="updateData()" class="w-full px-4 py-2.5 bg-[#f9f7f2] border border-[#d1d5db] rounded-xl focus:ring-1 focus:ring-[#c5a059] focus:border-[#c5a059] outline-none text-[#1a3c34]" value="1">
+                        <input type="text" id="inputGroup" oninput="updateData()" class="w-full px-4 py-3 bg-[#f9f7f2] border border-[#d1d5db] rounded-xl focus:ring-1 focus:ring-[#c5a059] focus:border-[#c5a059] outline-none text-[#1a3c34] text-base" value="1">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-[#5d4037] mb-1.5">عنوان الأسبوع</label>
-                        <input type="text" id="inputWeek" oninput="updateData()" class="w-full px-4 py-2.5 bg-[#f9f7f2] border border-[#d1d5db] rounded-xl focus:ring-1 focus:ring-[#c5a059] focus:border-[#c5a059] outline-none text-[#1a3c34]" value="الثاني">
+                        <input type="text" id="inputWeek" oninput="updateData()" class="w-full px-4 py-3 bg-[#f9f7f2] border border-[#d1d5db] rounded-xl focus:ring-1 focus:ring-[#c5a059] focus:border-[#c5a059] outline-none text-[#1a3c34] text-base" value="الثاني">
                     </div>
                 </div>
             </div>
@@ -255,18 +253,42 @@
                     <div class="w-1.5 h-6 bg-[#1a3c34] rounded-full"></div>
                     الأوراد الثابتة
                 </h2>
-                <div class="space-y-4">
+                <div class="space-y-6">
+                    <!-- Far Past -->
                     <div>
-                        <label class="block text-xs font-bold text-[#5d4037] mb-1.5">الماضي البعيد</label>
-                        <textarea id="inputFarPast" oninput="updateData()" rows="2" class="w-full px-3 py-2 bg-[#f9f7f2] border border-[#d1d5db] rounded-xl focus:border-[#1a3c34] outline-none text-sm text-[#1a3c34]">-</textarea>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-xs font-bold text-[#5d4037]">الماضي البعيد</label>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] text-gray-500">تقسيم يومي</span>
+                                <input type="checkbox" id="toggleFarPast" class="toggle-checkbox" onchange="toggleMode('farPast')">
+                                <label for="toggleFarPast" class="toggle-label"></label>
+                            </div>
+                        </div>
+                        <div id="farPastMergedContainer">
+                            <textarea id="inputFarPast" oninput="updateData()" rows="2" class="w-full px-3 py-3 bg-[#f9f7f2] border border-[#d1d5db] rounded-xl focus:border-[#1a3c34] outline-none text-sm text-[#1a3c34]">-</textarea>
+                        </div>
+                        <div id="farPastDailyContainer" class="hidden space-y-4"></div>
                     </div>
+
+                    <!-- Near Past -->
                     <div>
-                        <label class="block text-xs font-bold text-[#5d4037] mb-1.5">الماضي القريب</label>
-                        <textarea id="inputNearPast" oninput="updateData()" rows="2" class="w-full px-3 py-2 bg-[#f9f7f2] border border-[#d1d5db] rounded-xl focus:border-[#1a3c34] outline-none text-sm text-[#1a3c34]">تسميع من أول سورة البقرة إلى آية ٢٥ يومياً</textarea>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="block text-xs font-bold text-[#5d4037]">الماضي القريب</label>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] text-gray-500">تقسيم يومي</span>
+                                <input type="checkbox" id="toggleNearPast" class="toggle-checkbox" onchange="toggleMode('nearPast')">
+                                <label for="toggleNearPast" class="toggle-label"></label>
+                            </div>
+                        </div>
+                        <div id="nearPastMergedContainer">
+                            <textarea id="inputNearPast" oninput="updateData()" rows="2" class="w-full px-3 py-3 bg-[#f9f7f2] border border-[#d1d5db] rounded-xl focus:border-[#1a3c34] outline-none text-sm text-[#1a3c34]">تسميع من أول سورة البقرة إلى آية ٢٥ يومياً</textarea>
+                        </div>
+                        <div id="nearPastDailyContainer" class="hidden space-y-4"></div>
                     </div>
+
                     <div>
                         <label class="block text-xs font-bold text-[#5d4037] mb-1.5">التحضير</label>
-                        <textarea id="inputPrep" oninput="updateData()" rows="3" class="w-full px-3 py-2 bg-[#f9f7f2] border border-[#d1d5db] rounded-xl focus:border-[#1a3c34] outline-none text-sm text-[#1a3c34]">(( تلاوة ربع ))
+                        <textarea id="inputPrep" oninput="updateData()" rows="3" class="w-full px-3 py-3 bg-[#f9f7f2] border border-[#d1d5db] rounded-xl focus:border-[#1a3c34] outline-none text-sm text-[#1a3c34]">(( تلاوة ربع ))
 (( أتأمرون الناس بالبر ))
 والصلاة بالمحفوظ على مدار اليوم</textarea>
                     </div>
@@ -279,18 +301,16 @@
                     <div class="w-1.5 h-6 bg-[#c5a059] rounded-full"></div>
                     الحفظ اليومي
                 </h2>
-                <div id="rowsContainer" class="space-y-3 max-h-[400px] overflow-y-auto pr-1 scrollbar-thin"></div>
+                <div id="rowsContainer" class="space-y-4"></div>
             </div>
         </div>
 
         <!-- Preview Section -->
         <div class="lg:col-span-8 order-1 lg:order-2">
-            <!-- Preview Container -->
             <div id="previewContainer" class="bg-[#e6e2d3] rounded-3xl p-2 md:p-8 border-2 border-[#c5a059]/20 flex items-start justify-center overflow-hidden min-h-[300px] shadow-inner">
                 
                 <div id="pdfContent" class="bg-white shadow-2xl relative box-border p-8 origin-top" style="font-family: 'Amiri', 'Cairo', serif;">
                     
-                    <!-- ترويسة الجدول -->
                     <div class="flex items-start justify-between mb-6 border-b-2 border-double border-[#c5a059]/30 pb-4">
                         <div class="text-right w-1/2 pt-2">
                             <h2 class="text-5xl font-bold text-[#1a3c34] mb-2 leading-tight historical-font">
@@ -298,7 +318,6 @@
                             </h2>
                         </div>
                         <div class="w-1/2 flex flex-col items-end gap-2">
-                            <!-- بطاقة الاسم في المعاينة -->
                             <div class="bg-[#fffdf9] border-2 border-[#c5a059] rounded-xl px-6 py-3 shadow-sm w-fit min-w-[200px] relative overflow-hidden group">
                                 <div class="absolute top-0 right-0 w-1.5 h-full bg-[#1a3c34]"></div>
                                 <div class="flex items-center justify-between gap-4 mb-2 border-b border-[#c5a059]/20 pb-2">
@@ -312,14 +331,12 @@
                             </div>
                             <p class="text-[10px] text-[#1a3c34] font-medium flex items-center gap-1 opacity-80 pl-1">
                                 <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5 4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                                هدية من فريق الراسخون
+                                هدية من مجموعة الجبال الرواسي
                             </p>
                         </div>
                     </div>
 
-                    <!-- الجدول الرئيسي -->
                     <div class="w-full border-2 border-[#1a3c34] rounded-lg overflow-hidden shadow-sm">
-                        <!-- ترويسة الجدول -->
                         <div class="flex bg-[#1a3c34] border-b-2 border-[#1a3c34] font-extrabold text-[#f9f7f2] text-2xl">
                             <div class="w-[10%] p-3 text-center border-l-2 border-[#c5a059]">اليوم</div>
                             <div class="w-[15%] p-3 text-center border-l-2 border-[#c5a059]">الماضي البعيد</div>
@@ -329,23 +346,19 @@
                         </div>
 
                         <div class="flex h-[550px]">
-                            <!-- عمود الأيام -->
+                            <!-- Days Column -->
                             <div class="w-[10%] flex flex-col border-l-2 border-[#1a3c34] bg-[#f0ebe0] font-bold text-2xl text-[#1a3c34]" id="previewDaysCol"></div>
 
-                            <!-- الماضي البعيد -->
-                            <div class="w-[15%] border-l-2 border-[#1a3c34] bg-white vertical-cell">
-                                <div id="previewFarPast" class="vertical-text font-bold text-2xl text-[#1a3c34]" data-color="#1a3c34"></div>
-                            </div>
+                            <!-- Far Past -->
+                            <div class="w-[15%] border-l-2 border-[#1a3c34] bg-white vertical-cell" id="previewFarPastCol"></div>
 
-                            <!-- الماضي القريب -->
-                            <div class="w-[25%] border-l-2 border-[#1a3c34] bg-white vertical-cell">
-                                 <div id="previewNearPast" class="vertical-text font-bold text-2xl text-[#5d4037]" data-color="#5d4037"></div>
-                            </div>
+                            <!-- Near Past -->
+                            <div class="w-[25%] border-l-2 border-[#1a3c34] bg-white vertical-cell" id="previewNearPastCol"></div>
 
-                            <!-- الحفظ الجديد -->
+                            <!-- New Hifz -->
                             <div class="w-[25%] flex flex-col border-l-2 border-[#1a3c34]" id="previewNewHifzCol"></div>
 
-                            <!-- التحضير -->
+                            <!-- Prep -->
                             <div class="w-[25%] bg-[#fffcf5] vertical-cell">
                                  <div id="previewPrep" class="vertical-text font-bold text-xl text-[#1a3c34]" data-color="#1a3c34"></div>
                             </div>
@@ -353,7 +366,7 @@
                     </div>
 
                     <div class="mt-4 flex justify-between items-end opacity-60">
-                        <div class="text-xs text-[#5d4037]">تم الإنشاء بواسطة منصة جداول الحفظ</div>
+                        <div class="text-xs text-[#5d4037]">لا تنسوا الدعاء الصالح</div>
                         <div class="flex gap-1">
                             <div class="w-2 h-2 rounded-full bg-[#c5a059]"></div>
                             <div class="w-2 h-2 rounded-full bg-[#1a3c34]"></div>
@@ -371,17 +384,19 @@
             studentName: 'عمرو',
             groupNumber: '1',
             weekNumber: 'الثاني',
+            isFarPastMerged: true,
+            isNearPastMerged: true,
             farPast: '-',
             nearPast: 'تسميع من أول سورة البقرة إلى آية ٢٥ يومياً',
             preparation: '(( تلاوة ربع ))\n(( أتأمرون الناس بالبر ))\nوالصلاة بالمحفوظ على مدار اليوم',
             rows: [
-                { day: 'الجمعة', type: 'range', surah: 'البقرة', from: '٢٦', to: '٢٨', text: '' },
-                { day: 'السبت', type: 'range', surah: 'البقرة', from: '٢٦', to: '٣٣', text: '' },
-                { day: 'الأحد', type: 'range', surah: 'البقرة', from: '٢٦', to: '٣٨', text: '' },
-                { day: 'الاثنين', type: 'range', surah: 'البقرة', from: '٢٦', to: '٤٣', text: '' },
-                { day: 'الثلاثاء', type: 'text', from: '', to: '', text: 'تسميع الربع (٣) مرات' },
-                { day: 'الأربعاء', type: 'text', from: '', to: '', text: 'تسميع الربع (٥) مرات' },
-                { day: 'الخميس', type: 'text', from: '', to: '', text: 'تسميع الربع (٧) مرات' },
+                { day: 'الجمعة', type: 'range', surah: 'البقرة', from: '٢٦', to: '٢٨', text: '', farPast: {type:'text', text:''}, nearPast: {type:'text', text:''} },
+                { day: 'السبت', type: 'range', surah: 'البقرة', from: '٢٦', to: '٣٣', text: '', farPast: {type:'text', text:''}, nearPast: {type:'text', text:''} },
+                { day: 'الأحد', type: 'range', surah: 'البقرة', from: '٢٦', to: '٣٨', text: '', farPast: {type:'text', text:''}, nearPast: {type:'text', text:''} },
+                { day: 'الاثنين', type: 'range', surah: 'البقرة', from: '٢٦', to: '٤٣', text: '', farPast: {type:'text', text:''}, nearPast: {type:'text', text:''} },
+                { day: 'الثلاثاء', type: 'text', from: '', to: '', text: 'تسميع الربع (٣) مرات', farPast: {type:'text', text:''}, nearPast: {type:'text', text:''} },
+                { day: 'الأربعاء', type: 'text', from: '', to: '', text: 'تسميع الربع (٥) مرات', farPast: {type:'text', text:''}, nearPast: {type:'text', text:''} },
+                { day: 'الخميس', type: 'text', from: '', to: '', text: 'تسميع الربع (٧) مرات', farPast: {type:'text', text:''}, nearPast: {type:'text', text:''} },
             ]
         };
 
@@ -389,18 +404,127 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             renderEditorRows();
+            renderDailyEditors();
             renderPreview();
             fitPreviewToScreen();
             window.addEventListener('resize', fitPreviewToScreen);
         });
 
-        // --- Smart Reorder (LOCAL - No API Key) ---
+        // --- Toggle Logic ---
+        function toggleMode(key) {
+            if(key === 'farPast') {
+                appState.isFarPastMerged = !document.getElementById('toggleFarPast').checked;
+                document.getElementById('farPastMergedContainer').classList.toggle('hidden', !appState.isFarPastMerged);
+                document.getElementById('farPastDailyContainer').classList.toggle('hidden', appState.isFarPastMerged);
+            } else if(key === 'nearPast') {
+                appState.isNearPastMerged = !document.getElementById('toggleNearPast').checked;
+                document.getElementById('nearPastMergedContainer').classList.toggle('hidden', !appState.isNearPastMerged);
+                document.getElementById('nearPastDailyContainer').classList.toggle('hidden', appState.isNearPastMerged);
+            }
+            renderPreview();
+        }
+
+        // --- Helper to render specific cell HTML (INCREASED FONT SIZE HERE) ---
+        function getCellHtml(data, isTextMode) {
+            if (!isTextMode) {
+                // اسم السورة: text-xl
+                const surahHtml = data.surah ? `<span class="block text-[#1a3c34] text-xl font-bold mb-1 font-serif">سورة ${data.surah}</span>` : '';
+                return `
+                    <div class="flex flex-col items-center justify-center w-full">
+                        ${surahHtml}
+                        <!-- أرقام الآيات: text-3xl -->
+                        <div class="flex items-center gap-1 text-[#c5a059] text-3xl font-bold dir-ltr leading-none">
+                            <span class="text-center font-serif text-[#1a3c34]">${data.from || '?'}</span>
+                            <span class="text-[#c5a059] mx-1 text-2xl">←</span>
+                            <span class="text-center font-serif text-[#1a3c34]">${data.to || '?'}</span>
+                        </div>
+                    </div>`;
+            } else {
+                return `<span class="font-bold text-[#1a3c34] text-lg leading-tight">${data.text || ''}</span>`;
+            }
+        }
+
+        // --- Helper to render row editor ---
+        function renderSingleRowEditor(row, idx, context, containerId) {
+            const container = document.getElementById(containerId);
+            // Ensure object exists
+            if (!row[context]) row[context] = { type: 'text', text: '', surah: '', from: '', to: '' };
+            const data = row[context];
+            const isRange = data.type === 'range';
+
+            // Create div manually to append
+            const div = document.createElement('div');
+            div.className = 'bg-[#fffdf9] p-3 rounded-lg border border-[#c5a059]/20 transition-all hover:border-[#c5a059] shadow-sm mb-3';
+            
+            div.innerHTML = `
+                <div class="flex justify-between items-center mb-2 pb-2 border-b border-[#c5a059]/10">
+                    <span class="font-bold text-[#1a3c34] text-sm">${row.day}</span>
+                    <div class="flex bg-[#f0ebe0] rounded p-0.5 gap-1">
+                        <button onclick="toggleDailyRowType(${idx}, '${context}', 'range')" class="px-2 py-1 rounded text-[10px] font-bold transition-all ${isRange ? 'bg-[#1a3c34] text-white shadow' : 'text-gray-500 hover:text-[#1a3c34]'}">آيات</button>
+                        <button onclick="toggleDailyRowType(${idx}, '${context}', 'text')" class="px-2 py-1 rounded text-[10px] font-bold transition-all ${!isRange ? 'bg-[#1a3c34] text-white shadow' : 'text-gray-500 hover:text-[#1a3c34]'}">نص</button>
+                    </div>
+                </div>
+            `;
+
+            if (isRange) {
+                div.innerHTML += `
+                    <div class="flex flex-col gap-2">
+                        <div>
+                            <label class="text-[9px] text-[#5d4037] font-bold mb-0.5 block">اسم السورة</label>
+                            <input type="text" value="${data.surah || ''}" oninput="updateDailyRow(${idx}, '${context}', 'surah', this.value)" class="w-full p-2 bg-white border border-[#d1d5db] rounded text-sm focus:border-[#c5a059] outline-none" placeholder="البقرة">
+                        </div>
+                        <div class="flex gap-2">
+                            <div class="flex-1">
+                                <label class="text-[9px] text-[#5d4037] font-bold mb-0.5 block">من</label>
+                                <input type="text" value="${data.from || ''}" oninput="updateDailyRow(${idx}, '${context}', 'from', this.value)" class="w-full p-2 bg-white border border-[#d1d5db] rounded text-center text-sm font-bold focus:border-[#c5a059] outline-none">
+                            </div>
+                            <div class="flex-1">
+                                <label class="text-[9px] text-[#5d4037] font-bold mb-0.5 block">إلى</label>
+                                <input type="text" value="${data.to || ''}" oninput="updateDailyRow(${idx}, '${context}', 'to', this.value)" class="w-full p-2 bg-white border border-[#d1d5db] rounded text-center text-sm font-bold focus:border-[#c5a059] outline-none">
+                            </div>
+                        </div>
+                    </div>`;
+            } else {
+                div.innerHTML += `
+                    <div>
+                        <label class="text-[9px] text-[#5d4037] font-bold mb-0.5 block">النص</label>
+                        <input type="text" value="${data.text || ''}" oninput="updateDailyRow(${idx}, '${context}', 'text', this.value)" class="w-full p-2 bg-white border border-[#d1d5db] rounded text-sm focus:border-[#c5a059] outline-none" placeholder="ورد ${row.day}..">
+                    </div>`;
+            }
+            return div;
+        }
+
+        function renderDailyEditors() {
+            const farContainer = document.getElementById('farPastDailyContainer');
+            farContainer.innerHTML = '';
+            appState.rows.forEach((row, idx) => {
+                farContainer.appendChild(renderSingleRowEditor(row, idx, 'farPast', 'farPastDailyContainer'));
+            });
+
+            const nearContainer = document.getElementById('nearPastDailyContainer');
+            nearContainer.innerHTML = '';
+            appState.rows.forEach((row, idx) => {
+                nearContainer.appendChild(renderSingleRowEditor(row, idx, 'nearPast', 'nearPastDailyContainer'));
+            });
+        }
+
+        function toggleDailyRowType(index, context, type) {
+            if(!appState.rows[index][context]) appState.rows[index][context] = {};
+            appState.rows[index][context].type = type;
+            renderDailyEditors();
+            renderPreview();
+        }
+
+        function updateDailyRow(index, context, field, value) {
+            if(!appState.rows[index][context]) appState.rows[index][context] = { type: 'text' };
+            appState.rows[index][context][field] = value;
+            renderPreview();
+        }
+
         function smartReorder() {
             const input = document.getElementById('aiInput').value;
             const status = document.getElementById('aiStatus');
-            
             if (!input) return;
-
             let foundDay = null;
             for (const day of daysOfWeek) {
                 if (input.includes(day)) {
@@ -408,13 +532,12 @@
                     break;
                 }
             }
-
             if (foundDay) {
                 reorderDays(foundDay);
                 status.innerText = `تم تعديل البداية إلى: ${foundDay}`;
                 status.className = "text-[10px] text-[#1a3c34] mt-2 h-4 font-bold";
             } else {
-                status.innerText = 'لم أتمكن من فهم اليوم، يرجى كتابته بوضوح (مثلاً: السبت)';
+                status.innerText = 'لم أتمكن من فهم اليوم، يرجى كتابته بوضوح';
                 status.className = "text-[10px] text-red-600 mt-2 h-4";
             }
         }
@@ -422,20 +545,196 @@
         function reorderDays(startDay) {
             const startIndex = daysOfWeek.indexOf(startDay);
             if (startIndex === -1) return;
+            const newOrder = [...daysOfWeek.slice(startIndex), ...daysOfWeek.slice(0, startIndex)];
+            appState.rows.forEach((row, index) => { row.day = newOrder[index]; });
+            renderEditorRows();
+            renderDailyEditors();
+            renderPreview();
+        }
 
-            const newOrder = [
-                ...daysOfWeek.slice(startIndex),
-                ...daysOfWeek.slice(0, startIndex)
-            ];
-
+        function renderEditorRows() {
+            const container = document.getElementById('rowsContainer');
+            container.innerHTML = '';
             appState.rows.forEach((row, index) => {
-                row.day = newOrder[index];
+                const div = document.createElement('div');
+                div.className = 'bg-[#fffdf9] p-4 rounded-xl border-2 border-[#c5a059]/20 transition-all hover:border-[#c5a059] shadow-sm mb-4';
+                const isRange = row.type === 'range';
+                div.innerHTML = `
+                    <div class="flex justify-between items-center mb-3 pb-2 border-b border-[#c5a059]/10">
+                        <span class="font-bold text-[#1a3c34] text-lg">${row.day}</span>
+                        <div class="flex bg-[#f0ebe0] rounded-lg p-1 gap-1">
+                            <button onclick="toggleRowType(${index}, 'range')" class="px-3 py-1.5 rounded-md text-xs font-bold transition-all ${isRange ? 'bg-[#1a3c34] text-white shadow' : 'text-gray-500 hover:text-[#1a3c34]'}">آيات (أرقام)</button>
+                            <button onclick="toggleRowType(${index}, 'text')" class="px-3 py-1.5 rounded-md text-xs font-bold transition-all ${!isRange ? 'bg-[#1a3c34] text-white shadow' : 'text-gray-500 hover:text-[#1a3c34]'}">نص حر</button>
+                        </div>
+                    </div>
+                `;
+                if (isRange) {
+                    div.innerHTML += `
+                        <div class="flex flex-col gap-3">
+                            <div class="flex flex-col">
+                                <label class="text-[10px] text-[#5d4037] font-bold mb-1">اسم السورة</label>
+                                <input type="text" value="${row.surah || ''}" oninput="updateRow(${index}, 'surah', this.value)" class="w-full p-2.5 bg-white border border-[#d1d5db] rounded-lg text-base focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] outline-none" placeholder="مثال: البقرة">
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="flex-1 flex flex-col">
+                                    <label class="text-[10px] text-[#5d4037] font-bold mb-1">من آية</label>
+                                    <input type="text" value="${row.from || ''}" oninput="updateRow(${index}, 'from', this.value)" class="w-full p-2.5 bg-white border border-[#d1d5db] rounded-lg text-center text-base font-bold focus:border-[#c5a059] outline-none" placeholder="1">
+                                </div>
+                                <div class="flex items-center justify-center pt-4">
+                                    <svg class="text-[#c5a059]" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                                </div>
+                                <div class="flex-1 flex flex-col">
+                                    <label class="text-[10px] text-[#5d4037] font-bold mb-1">إلى آية</label>
+                                    <input type="text" value="${row.to || ''}" oninput="updateRow(${index}, 'to', this.value)" class="w-full p-2.5 bg-white border border-[#d1d5db] rounded-lg text-center text-base font-bold focus:border-[#c5a059] outline-none" placeholder="10">
+                                </div>
+                            </div>
+                        </div>`;
+                } else {
+                    div.innerHTML += `
+                        <div class="flex flex-col">
+                            <label class="text-[10px] text-[#5d4037] font-bold mb-1">نص الورد</label>
+                            <input type="text" value="${row.text || ''}" oninput="updateRow(${index}, 'text', this.value)" class="w-full p-3 bg-white border border-[#d1d5db] rounded-lg text-base focus:border-[#c5a059] focus:ring-1 focus:ring-[#c5a059] outline-none" placeholder="اكتب المطلوب هنا...">
+                        </div>`;
+                }
+                container.appendChild(div);
             });
+        }
 
+        function updateRow(index, field, value) {
+            appState.rows[index][field] = value;
+            renderPreview();
+        }
+
+        function toggleRowType(index, type) {
+            appState.rows[index].type = type;
             renderEditorRows();
             renderPreview();
         }
 
+        function updateData() {
+            appState.studentName = document.getElementById('inputName').value;
+            appState.groupNumber = document.getElementById('inputGroup').value;
+            appState.weekNumber = document.getElementById('inputWeek').value;
+            appState.farPast = document.getElementById('inputFarPast').value;
+            appState.nearPast = document.getElementById('inputNearPast').value;
+            appState.preparation = document.getElementById('inputPrep').value;
+            renderPreview();
+        }
+
+        function renderPreview() {
+            document.getElementById('previewName').innerText = appState.studentName;
+            document.getElementById('previewGroup').innerText = appState.groupNumber;
+            document.getElementById('previewWeek').innerText = appState.weekNumber;
+            
+            // Render Far Past Column
+            const farCol = document.getElementById('previewFarPastCol');
+            farCol.innerHTML = '';
+            if(appState.isFarPastMerged) {
+                farCol.classList.remove('flex', 'flex-col', 'border-t-0'); 
+                farCol.innerHTML = `<div id="previewFarPast" class="vertical-text font-bold text-2xl text-[#1a3c34]" data-color="#1a3c34">${appState.farPast}</div>`;
+            } else {
+                farCol.classList.add('flex', 'flex-col', 'border-t-0');
+                farCol.innerHTML = appState.rows.map(row => `
+                    <div class="flex-1 flex items-center justify-center text-center border-b border-[#c5a059]/30 last:border-b-0 p-1">
+                        ${getCellHtml(row.farPast, row.farPast?.type !== 'range')}
+                    </div>
+                `).join('');
+            }
+
+            // Render Near Past Column
+            const nearCol = document.getElementById('previewNearPastCol');
+            nearCol.innerHTML = '';
+            if(appState.isNearPastMerged) {
+                nearCol.classList.remove('flex', 'flex-col', 'border-t-0');
+                nearCol.innerHTML = `<div id="previewNearPast" class="vertical-text font-bold text-2xl text-[#5d4037]" data-color="#5d4037">${appState.nearPast}</div>`;
+            } else {
+                nearCol.classList.add('flex', 'flex-col', 'border-t-0');
+                nearCol.innerHTML = appState.rows.map(row => `
+                    <div class="flex-1 flex items-center justify-center text-center border-b border-[#c5a059]/30 last:border-b-0 p-1">
+                        ${getCellHtml(row.nearPast, row.nearPast?.type !== 'range')}
+                    </div>
+                `).join('');
+            }
+
+            const prepEl = document.getElementById('previewPrep');
+            prepEl.innerText = appState.preparation;
+            prepEl.setAttribute('data-text', appState.preparation);
+
+            const daysCol = document.getElementById('previewDaysCol');
+            const hifzCol = document.getElementById('previewNewHifzCol');
+            daysCol.innerHTML = '';
+            hifzCol.innerHTML = '';
+
+            appState.rows.forEach(row => {
+                daysCol.innerHTML += `<div class="flex-1 flex items-center justify-center border-b border-[#c5a059]/30 last:border-b-0 font-bold text-2xl text-[#1a3c34]">${row.day}</div>`;
+                hifzCol.innerHTML += `<div class="flex-1 flex items-center justify-center text-center border-b border-[#c5a059]/30 last:border-b-0 p-1 bg-white">${getCellHtml(row, row.type !== 'range')}</div>`;
+            });
+        }
+
+        // --- Drawing Logic (Updated Font) ---
+        function drawVerticalText(text, color) {
+            if (!text) return null;
+            const tempCanvas = document.createElement('canvas');
+            const ctx = tempCanvas.getContext('2d');
+            const width = 540; const height = 250;
+            tempCanvas.width = width; tempCanvas.height = height;
+            ctx.direction = 'rtl'; ctx.font = 'bold 24px "Tajawal", sans-serif'; ctx.fillStyle = color;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            const lines = text.split('\n'); const lineHeight = 45;
+            const startY = (height - ((lines.length - 1) * lineHeight)) / 2;
+            lines.forEach((line, i) => { ctx.fillText(line, width / 2, startY + (i * lineHeight)); });
+            const finalCanvas = document.createElement('canvas');
+            finalCanvas.width = height; finalCanvas.height = width;
+            const fCtx = finalCanvas.getContext('2d');
+            fCtx.translate(0, width); fCtx.rotate(-Math.PI / 2); fCtx.drawImage(tempCanvas, 0, 0);
+            return finalCanvas.toDataURL();
+        }
+
+        async function downloadImage() {
+            const element = document.getElementById('pdfContent');
+            const btn = document.getElementById('downloadBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="animate-pulse">جاري المعالجة...</span>';
+            btn.disabled = true;
+            const currentTransform = element.style.transform;
+            element.style.transform = 'scale(1)';
+            try {
+                await document.fonts.ready;
+                const verticalElements = document.querySelectorAll('.vertical-text');
+                const restoreTasks = [];
+                verticalElements.forEach(el => {
+                    const text = el.getAttribute('data-text') || el.innerText;
+                    const color = el.getAttribute('data-color') || '#1a3c34';
+                    // Only draw if element is visible
+                    if (el.offsetParent !== null && text) {
+                        const dataUrl = drawVerticalText(text, color);
+                        if (dataUrl) {
+                            const originalHTML = el.innerHTML;
+                            const img = document.createElement('img');
+                            img.src = dataUrl;
+                            el.classList.remove('vertical-text');
+                            el.style.position = 'absolute'; el.style.top = '0'; el.style.left = '0';
+                            el.style.width = '100%'; el.style.height = '100%';
+                            el.style.display = 'flex'; el.style.alignItems = 'center'; el.style.justifyContent = 'center';
+                            el.style.transform = 'none';
+                            el.innerHTML = ''; el.appendChild(img);
+                            restoreTasks.push(() => {
+                                el.innerHTML = originalHTML; el.classList.add('vertical-text');
+                                el.removeAttribute('style');
+                            });
+                        }
+                    }
+                });
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#f0ebe0', scrollY: -window.scrollY, logging: false, width: element.offsetWidth, height: element.offsetHeight });
+                const link = document.createElement('a');
+                link.download = `جدول_الحفظ_${appState.weekNumber}.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 0.95);
+                link.click();
+                restoreTasks.forEach(t => t());
+            } catch (err) { console.error(err); alert("حدث خطأ أثناء إنشاء الصورة."); } 
+            finally { element.style.transform = currentTransform; btn.innerHTML = originalText; btn.disabled = false; }
+        }
+        
         function openInstaPayEffect() {
             const modal = document.getElementById('instapayModal');
             const card = document.getElementById('cardObject');
@@ -463,168 +762,6 @@
             content.style.transform = `scale(${scale})`;
             const scaledHeight = content.offsetHeight * scale;
             container.style.height = `${scaledHeight + 40}px`;
-        }
-
-        function updateData() {
-            appState.studentName = document.getElementById('inputName').value;
-            appState.groupNumber = document.getElementById('inputGroup').value;
-            appState.weekNumber = document.getElementById('inputWeek').value;
-            appState.farPast = document.getElementById('inputFarPast').value;
-            appState.nearPast = document.getElementById('inputNearPast').value;
-            appState.preparation = document.getElementById('inputPrep').value;
-            renderPreview();
-        }
-
-        function updateRow(index, field, value) {
-            appState.rows[index][field] = value;
-            renderPreview();
-        }
-
-        function toggleRowType(index, type) {
-            appState.rows[index].type = type;
-            renderEditorRows();
-            renderPreview();
-        }
-
-        function renderEditorRows() {
-            const container = document.getElementById('rowsContainer');
-            container.innerHTML = '';
-            appState.rows.forEach((row, index) => {
-                const div = document.createElement('div');
-                div.className = 'bg-[#fffdf9] p-3 rounded-xl border border-[#c5a059]/20 transition-all hover:border-[#c5a059]';
-                const rangeBtnClass = row.type === 'range' ? 'bg-[#1a3c34] text-[#c5a059]' : 'text-gray-400 hover:text-[#1a3c34]';
-                const textBtnClass = row.type === 'text' ? 'bg-[#1a3c34] text-[#c5a059]' : 'text-gray-400 hover:text-[#1a3c34]';
-                div.innerHTML = `
-                    <div class="flex justify-between items-center mb-2">
-                        <span class="font-bold text-[#1a3c34] text-sm">${row.day}</span>
-                        <div class="flex bg-white rounded-lg border border-[#d1d5db] p-0.5 shadow-sm">
-                            <button onclick="toggleRowType(${index}, 'range')" class="px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 transition-colors ${rangeBtnClass}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" x2="20" y1="9" y2="9"/><line x1="4" x2="20" y1="15" y2="15"/><line x1="10" x2="8" y1="3" y2="21"/><line x1="16" x2="14" y1="3" y2="21"/></svg></button>
-                            <button onclick="toggleRowType(${index}, 'text')" class="px-2 py-1 rounded-md text-xs font-medium flex items-center gap-1 transition-colors ${textBtnClass}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></svg></button>
-                        </div>
-                    </div>
-                `;
-                if (row.type === 'range') {
-                    div.innerHTML += `
-                        <div class="flex flex-col gap-2">
-                            <input type="text" value="${row.surah || ''}" oninput="updateRow(${index}, 'surah', this.value)" class="w-full p-1.5 bg-[#f9f7f2] border border-[#d1d5db] rounded-lg text-sm focus:border-[#c5a059] outline-none" placeholder="اسم السورة (اختياري)">
-                            <div class="flex items-center gap-2">
-                                <input type="text" value="${row.from || ''}" oninput="updateRow(${index}, 'from', this.value)" class="w-full p-1.5 bg-[#f9f7f2] border border-[#d1d5db] rounded-lg text-center text-sm focus:border-[#c5a059] outline-none" placeholder="من">
-                                <svg class="text-[#c5a059]" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-                                <input type="text" value="${row.to || ''}" oninput="updateRow(${index}, 'to', this.value)" class="w-full p-1.5 bg-[#f9f7f2] border border-[#d1d5db] rounded-lg text-center text-sm focus:border-[#c5a059] outline-none" placeholder="إلى">
-                            </div>
-                        </div>`;
-                } else {
-                    div.innerHTML += `<input type="text" value="${row.text || ''}" oninput="updateRow(${index}, 'text', this.value)" class="w-full p-1.5 bg-[#f9f7f2] border border-[#d1d5db] rounded-lg text-sm focus:border-[#c5a059] outline-none" placeholder="نص الورد...">`;
-                }
-                container.appendChild(div);
-            });
-        }
-
-        function renderPreview() {
-            document.getElementById('previewName').innerText = appState.studentName;
-            document.getElementById('previewGroup').innerText = appState.groupNumber;
-            document.getElementById('previewWeek').innerText = appState.weekNumber;
-            
-            const farPastEl = document.getElementById('previewFarPast');
-            farPastEl.innerText = appState.farPast;
-            farPastEl.setAttribute('data-text', appState.farPast);
-
-            const nearPastEl = document.getElementById('previewNearPast');
-            nearPastEl.innerText = appState.nearPast;
-            nearPastEl.setAttribute('data-text', appState.nearPast);
-
-            const prepEl = document.getElementById('previewPrep');
-            prepEl.innerText = appState.preparation;
-            prepEl.setAttribute('data-text', appState.preparation);
-
-            const daysCol = document.getElementById('previewDaysCol');
-            const hifzCol = document.getElementById('previewNewHifzCol');
-            daysCol.innerHTML = '';
-            hifzCol.innerHTML = '';
-
-            appState.rows.forEach(row => {
-                // Update day colors to match theme
-                daysCol.innerHTML += `<div class="flex-1 flex items-center justify-center border-b border-[#c5a059]/30 last:border-b-0 font-bold text-2xl text-[#1a3c34]">${row.day}</div>`;
-                let content = '';
-                if (row.type === 'range') {
-                    const surahHtml = row.surah ? `<span class="block text-[#1a3c34] text-sm font-bold mb-1 font-serif">سورة ${row.surah}</span>` : '';
-                    content = `
-                        <div class="flex flex-col items-center justify-center w-full">
-                            ${surahHtml}
-                            <div class="flex items-center gap-3 text-[#c5a059] text-2xl font-bold dir-ltr">
-                                <span class="w-10 text-center font-serif text-[#1a3c34]">${row.from || '?'}</span>
-                                <span class="text-[#c5a059] text-xl">←</span>
-                                <span class="w-10 text-center font-serif text-[#1a3c34]">${row.to || '?'}</span>
-                            </div>
-                        </div>`;
-                } else {
-                    content = `<span class="font-bold text-[#1a3c34] text-xl leading-tight">${row.text || ''}</span>`;
-                }
-                hifzCol.innerHTML += `<div class="flex-1 flex items-center justify-center text-center border-b border-[#c5a059]/30 last:border-b-0 p-1 bg-white">${content}</div>`;
-            });
-        }
-
-        // --- Drawing Logic (Updated Font) ---
-        function drawVerticalText(text, color) {
-            if (!text) return null;
-            const tempCanvas = document.createElement('canvas');
-            const ctx = tempCanvas.getContext('2d');
-            const width = 540; const height = 250;
-            tempCanvas.width = width; tempCanvas.height = height;
-            // Updated font to 'Tajawal' to match the new theme
-            ctx.direction = 'rtl'; ctx.font = 'bold 24px "Tajawal", sans-serif'; ctx.fillStyle = color;
-            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-            const lines = text.split('\n'); const lineHeight = 45;
-            const startY = (height - ((lines.length - 1) * lineHeight)) / 2;
-            lines.forEach((line, i) => { ctx.fillText(line, width / 2, startY + (i * lineHeight)); });
-            const finalCanvas = document.createElement('canvas');
-            finalCanvas.width = height; finalCanvas.height = width;
-            const fCtx = finalCanvas.getContext('2d');
-            fCtx.translate(0, width); fCtx.rotate(-Math.PI / 2); fCtx.drawImage(tempCanvas, 0, 0);
-            return finalCanvas.toDataURL();
-        }
-
-        async function downloadImage() {
-            const element = document.getElementById('pdfContent');
-            const btn = document.getElementById('downloadBtn');
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<span class="animate-pulse">جاري المعالجة...</span>';
-            btn.disabled = true;
-            const currentTransform = element.style.transform;
-            element.style.transform = 'scale(1)';
-            try {
-                await document.fonts.ready;
-                const verticalElements = document.querySelectorAll('.vertical-text');
-                const restoreTasks = [];
-                verticalElements.forEach(el => {
-                    const text = el.getAttribute('data-text') || el.innerText;
-                    // Pass color explicitly if needed, currently using data attributes in HTML
-                    const color = el.getAttribute('data-color') || '#1a3c34';
-                    const dataUrl = drawVerticalText(text, color);
-                    if (dataUrl) {
-                        const originalHTML = el.innerHTML;
-                        const img = document.createElement('img');
-                        img.src = dataUrl;
-                        el.classList.remove('vertical-text');
-                        el.style.position = 'absolute'; el.style.top = '0'; el.style.left = '0';
-                        el.style.width = '100%'; el.style.height = '100%';
-                        el.style.display = 'flex'; el.style.alignItems = 'center'; el.style.justifyContent = 'center';
-                        el.style.transform = 'none';
-                        el.innerHTML = ''; el.appendChild(img);
-                        restoreTasks.push(() => {
-                            el.innerHTML = originalHTML; el.classList.add('vertical-text');
-                            el.removeAttribute('style');
-                        });
-                    }
-                });
-                const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#f0ebe0', scrollY: -window.scrollY, logging: false, width: element.offsetWidth, height: element.offsetHeight });
-                const link = document.createElement('a');
-                link.download = `جدول_الحفظ_${appState.weekNumber}.jpg`;
-                link.href = canvas.toDataURL('image/jpeg', 0.95);
-                link.click();
-                restoreTasks.forEach(t => t());
-            } catch (err) { console.error(err); alert("حدث خطأ أثناء إنشاء الصورة."); } 
-            finally { element.style.transform = currentTransform; btn.innerHTML = originalText; btn.disabled = false; }
         }
     </script>
 </body>
