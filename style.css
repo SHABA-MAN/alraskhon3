@@ -1,0 +1,134 @@
+/* --- متغيرات الثيم --- */
+:root {
+    --primary-gold: #c5a059;
+    --primary-dark: #1a3c34;
+    --primary-cream: #f9f7f2;
+    --accent-wood: #5d4037;
+}
+
+body { 
+    font-family: 'Tajawal', sans-serif; 
+    background-color: #f0ebe0;
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c5a059' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    overflow-x: hidden; 
+}
+
+.font-serif { font-family: 'Amiri', serif; }
+.historical-font { font-family: 'Amiri', serif; }
+
+.scrollbar-thin::-webkit-scrollbar { width: 6px; }
+.scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background-color: var(--primary-gold); border-radius: 20px; }
+
+/* --- تنسيق النص العمودي --- */
+.vertical-cell {
+    position: relative;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.vertical-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-90deg);
+    width: 540px; 
+    text-align: center;
+    white-space: pre-wrap;
+    direction: rtl;
+    line-height: 1.8;
+    text-rendering: geometricPrecision;
+}
+
+/* --- حجم الورقة --- */
+#pdfContent {
+    width: 250mm !important;
+    min-width: 250mm !important;
+    min-height: 210mm !important;
+    margin-left: auto;
+    margin-right: auto;
+    transform-origin: top center;
+    transition: transform 0.2s ease;
+}
+
+/* --- زر الدعم العائم --- */
+.fab-btn {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 40;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4c1d95, #6d28d9);
+    box-shadow: 0 10px 25px -5px rgba(76, 29, 149, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+}
+.fab-btn:hover {
+    transform: translateY(-5px) scale(1.1) rotate(5deg);
+    box-shadow: 0 20px 30px -10px rgba(76, 29, 149, 0.6);
+}
+.plane-icon { animation: float 3s ease-in-out infinite; }
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+}
+
+/* --- تنسيقات المودال --- */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 60, 52, 0.8);
+    backdrop-filter: blur(8px);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s ease;
+}
+.modal-overlay.active { opacity: 1; pointer-events: auto; }
+.card-scene { width: 320px; height: 200px; perspective: 1000px; }
+.card-object {
+    width: 100%; height: 100%; position: relative;
+    transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d; transform: scale(0.8); opacity: 0;
+}
+.modal-overlay.active .card-object { transform: scale(1); opacity: 1; }
+.modal-overlay.active .card-object.flipped { transform: rotateY(180deg) scale(1); }
+.card-face {
+    position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+    border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    padding: 20px; text-align: center;
+}
+.card-front { background: linear-gradient(135deg, #4c1d95, #7e22ce); color: white; border: 2px solid rgba(255,255,255,0.2); }
+.card-back { background: #fffdf9; transform: rotateY(180deg); color: #4c1d95; border: 4px solid #7e22ce; }
+.spinner {
+    width: 24px; height: 24px; border: 3px solid #e9d5ff; border-top-color: #7e22ce;
+    border-radius: 50%; animation: spin 1s linear infinite; margin-top: 10px;
+}
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+/* AI Box Styles */
+.ai-box {
+    background: linear-gradient(135deg, #f0ebe0 0%, #fffdf9 100%);
+    border: 1px solid rgba(197, 160, 89, 0.3);
+}
+
+/* Toggle Styles */
+.toggle-checkbox:checked { right: 0; border-color: #1a3c34; }
+.toggle-checkbox:checked + .toggle-label { background-color: #1a3c34; }
+.toggle-checkbox { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+.toggle-label { width: 36px; height: 20px; background-color: #ccc; display: block; border-radius: 100px; position: relative; cursor: pointer; transition: background-color 0.3s; }
+.toggle-label:after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: #fff; border-radius: 90px; transition: 0.3s; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+.toggle-checkbox:checked + .toggle-label:after { left: calc(100% - 2px); transform: translateX(-100%); }
