@@ -382,6 +382,7 @@ function fitPreviewToScreen() {
     container.style.height = `${scaledHeight + 40}px`;
 }
 
+
 // --- OCR Logic ---
 async function processImage(input) {
     const file = input.files[0];
@@ -399,17 +400,16 @@ async function processImage(input) {
     uploadBtn.innerHTML = '<span class="animate-pulse">جاري التحليل...</span>';
 
     try {
-        const worker = await Tesseract.createWorker('ara'); // Arabic only
+        // Create worker without strictly forcing language yet to allow initialization
+        const worker = await Tesseract.createWorker('ara'); 
         
-        // Progress logger
-        worker.setParameters({
-            tessedit_char_whitelist: 'ابتثجحخدذرزسشصضطظعغفقكلمنهوي٠١٢٣٤٥٦٧٨٩' + 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789' + ' \n\t-/:.()[]!@#$%^&*'
-        });
-
+        // We REMOVED the strict whitelist to improve accuracy with special fonts/symbols.
+        // Instead, we rely on post-processing.
+        
         const ret = await worker.recognize(file);
         const text = ret.data.text;
         
-        console.log("Raw OCR Text:", text); // Debugging
+        console.log("Raw OCR Text:", text);
         
         // Show Debug Info
         if(debugArea) debugArea.classList.remove('hidden');
@@ -423,7 +423,7 @@ async function processImage(input) {
         
     } catch (err) {
         console.error(err);
-        statusObj.innerText = 'فشل في قراءة الصورة، يرجى المحاولة بصورة أوضح';
+        statusObj.innerText = 'فشل في قراءة الصورة. تأكد من الاتصال بالإنترنت لتحميل ملفات اللغة.';
         statusObj.className = 'text-[10px] text-red-600 mt-1 min-h-[1rem]';
     } finally {
         uploadBtn.disabled = false;
@@ -432,19 +432,19 @@ async function processImage(input) {
             <span class="md:hidden">قراءة</span>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
         `;
-        // Clear input to allow re-uploading same file
         input.value = '';
     }
 }
 
-// Normalize Text for easier matching
+// Normalize Text
 function normalizeText(text) {
     if (!text) return "";
     return text
-        .replace(/[^\u0600-\u06FF\u0030-\u0039\u0660-\u0669a-zA-Z\s]/g, ' ') // Keep Arabic lists, digits, english letters users often use
         .replace(/[أإآ]/g, 'ا')
         .replace(/[ة]/g, 'ه')
-        .replace(/[ي]/g, 'ى') // Optional, sometimes useful
+        .replace(/[ي]/g, 'ى')
+        // Remove common OCR artifacts but keep numbers and letters
+        .replace(/[^\u0600-\u06FF0-9a-zA-Z\s]/g, ' ') 
         .replace(/\s+/g, ' ')
         .trim();
 }
@@ -453,68 +453,50 @@ function parseOCRResult(originalText) {
     const lines = originalText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
     const normalizedLines = lines.map(normalizeText);
 
-    // Helper to find value by checking normalized keywords
-    const findValue = (keywords) => {
-        const normKeywords = keywords.map(normalizeText);
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
-            const normLine = normalizedLines[i];
-            
-            for (let kw of normKeywords) {
-                if (normLine.includes(kw)) {
-                    // Start extracting from original line to keep spelling correct
-                    // We try to approximate position or just remove known keywords from the line
-                    
-                    // Simple approach: Remove the identified keyword chars roughly
-                    // But easier: Return the part of the line that IS NOT the keyword
-                    // Since specific positioning is hard with simple replacements, 
-                    // we'll rely on the fact that these fields are usually "Label: Value"
-                    
-                    // Split by keyword if possible, else just take the whole line
-                    // A safe way: remove the keyword length from start if it starts with it
-                    // But keyword matching was loose. 
-                    
-                    // Let's just strip non-value chars
-                    let val = line.replace(/[:.\-–_]+/g, ' '); 
-                    // Remove the keyword string from val if it exists (fuzzy remove is hard)
-                    // Let's iterate original keywords to remove them
-                    keywords.forEach(k => {
-                        val = val.replace(k, '');
-                    });
-                    
-                    val = val.trim();
-                    if (val.length > 1) return val;
-                }
+    // --- Header Parsing (Name, Week, Group) ---
+    // Look for lines containing keywords anywhere
+    for (const line of lines) {
+        const norm = normalizeText(line);
+        
+        // Student Name
+        if (norm.includes('الطالب') || norm.includes('اسم الطالب')) {
+            // Usually "الطالب: [Name]" or "[Name] الطالب"
+            // We just grab the biggest Arabic string that isn't the label
+            let val = line.replace(/الطالب|اسم الطالب|[:]/g, '').trim();
+            if (val.length > 2) {
+                document.getElementById('inputName').value = val;
+                appState.studentName = val;
             }
         }
-        return null;
-    };
-
-    // 1. Student Data
-    const name = findValue(['الطالب', 'اسم الطالب']);
-    const group = findValue(['المجموعة', 'رقم المجموعة']);
-    const week = findValue(['الأسبوع', 'عنوان الأسبوع']);
-
-    if (name) {
-        document.getElementById('inputName').value = name;
-        appState.studentName = name;
-    }
-    if (group) {
-        const num = group.replace(/[^\d0-9٠-٩]/g, '');
-        if (num) {
-            document.getElementById('inputGroup').value = num;
-            appState.groupNumber = num;
+        
+        // Group
+        if (norm.includes('المجموعة')) {
+            let val = line.replace(/[^0-9٠-٩]/g, '');
+            if (val.length > 0) {
+                document.getElementById('inputGroup').value = val;
+                appState.groupNumber = val;
+            }
+        }
+        
+        // Week
+        if (norm.includes('الاسبوع') || norm.includes('عنوان الاسبوع')) {
+            // Often "الأسبوع الخامس"
+            let val = line.replace(/الاسبوع|الأسبوع|عنوان الاسبوع|[:]/g, '').trim();
+            if (val.length > 2) {
+                document.getElementById('inputWeek').value = val;
+                appState.weekNumber = val;
+            }
         }
     }
-    if (week) {
-        document.getElementById('inputWeek').value = week;
-        appState.weekNumber = week;
-    }
 
-    // 3. Daily Content
-    let newRows = JSON.parse(JSON.stringify(appState.rows));
+    // --- Table Rows Parsing (Specialized) ---
+    // We will iterate and maintain a "Current Day" context.
+    // If we see a day name, we set the context.
+    // If we see content (Surah/Numbers), we add it to the current context.
     
-    // Map of normalized day names to index
+    let newRows = JSON.parse(JSON.stringify(appState.rows));
+    let currentDayIndex = -1;
+
     const dayMap = {};
     daysOfWeek.forEach((d, i) => dayMap[normalizeText(d)] = i);
 
