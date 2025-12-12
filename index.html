@@ -140,6 +140,18 @@
                 <p id="aiStatus" class="text-[10px] text-[#5d4037] mt-2 h-4"></p>
                 <!-- OCR Status -->
                 <p id="ocrStatus" class="text-[10px] text-blue-600 mt-1 min-h-[1rem] hidden"></p>
+
+                <!-- Debug Area -->
+                <div id="ocrDebugArea" class="hidden mt-3 pt-3 border-t border-[#c5a059]/20">
+                    <details>
+                        <summary
+                            class="text-[10px] text-[#5d4037] cursor-pointer hover:text-[#1a3c34] font-bold select-none">
+                            عرض النص الخام (للمطورين)</summary>
+                        <textarea id="ocrDebugText"
+                            class="w-full mt-2 h-32 p-2 text-[10px] bg-[#f9f7f2] border border-[#d1d5db] rounded font-mono text-left dir-ltr resize-y"
+                            readonly placeholder="سيظهر هنا النص المستخرج..."></textarea>
+                    </details>
+                </div>
             </div>
 
             <!-- Card: Student Data -->

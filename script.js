@@ -389,6 +389,8 @@ async function processImage(input) {
 
     const statusObj = document.getElementById('ocrStatus');
     const uploadBtn = document.getElementById('uploadBtn');
+    const debugArea = document.getElementById('ocrDebugArea');
+    const debugText = document.getElementById('ocrDebugText');
     
     // UI Loading State
     statusObj.classList.remove('hidden');
@@ -409,11 +411,15 @@ async function processImage(input) {
         
         console.log("Raw OCR Text:", text); // Debugging
         
+        // Show Debug Info
+        if(debugArea) debugArea.classList.remove('hidden');
+        if(debugText) debugText.value = text;
+
         parseOCRResult(text);
         await worker.terminate();
 
         statusObj.innerText = 'تم استخراج البيانات بنجاح!';
-        statusObj.className = 'text-[10px] text-green-600 mt-1 min-h-[1rem] Font-bold';
+        statusObj.className = 'text-[10px] text-green-600 mt-1 min-h-[1rem] font-bold';
         
     } catch (err) {
         console.error(err);
@@ -431,19 +437,52 @@ async function processImage(input) {
     }
 }
 
-function parseOCRResult(text) {
-    const lines = text.split('\n').filter(l => l.trim() !== '');
-    
-    // Helper to find value after a keyword
+// Normalize Text for easier matching
+function normalizeText(text) {
+    if (!text) return "";
+    return text
+        .replace(/[^\u0600-\u06FF\u0030-\u0039\u0660-\u0669a-zA-Z\s]/g, ' ') // Keep Arabic lists, digits, english letters users often use
+        .replace(/[أإآ]/g, 'ا')
+        .replace(/[ة]/g, 'ه')
+        .replace(/[ي]/g, 'ى') // Optional, sometimes useful
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function parseOCRResult(originalText) {
+    const lines = originalText.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+    const normalizedLines = lines.map(normalizeText);
+
+    // Helper to find value by checking normalized keywords
     const findValue = (keywords) => {
-        for (let line of lines) {
-            for (let kw of keywords) {
-                if (line.includes(kw)) {
-                    // Try to extract text after the keyword
-                    // Removing the keyword and trimming
-                    let val = line.replace(kw, '').trim();
-                    // Clean up common OCR artifacts like colons or random dots at start
-                    val = val.replace(/^[:.\-–\s]+/, '').trim();
+        const normKeywords = keywords.map(normalizeText);
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const normLine = normalizedLines[i];
+            
+            for (let kw of normKeywords) {
+                if (normLine.includes(kw)) {
+                    // Start extracting from original line to keep spelling correct
+                    // We try to approximate position or just remove known keywords from the line
+                    
+                    // Simple approach: Remove the identified keyword chars roughly
+                    // But easier: Return the part of the line that IS NOT the keyword
+                    // Since specific positioning is hard with simple replacements, 
+                    // we'll rely on the fact that these fields are usually "Label: Value"
+                    
+                    // Split by keyword if possible, else just take the whole line
+                    // A safe way: remove the keyword length from start if it starts with it
+                    // But keyword matching was loose. 
+                    
+                    // Let's just strip non-value chars
+                    let val = line.replace(/[:.\-–_]+/g, ' '); 
+                    // Remove the keyword string from val if it exists (fuzzy remove is hard)
+                    // Let's iterate original keywords to remove them
+                    keywords.forEach(k => {
+                        val = val.replace(k, '');
+                    });
+                    
+                    val = val.trim();
                     if (val.length > 1) return val;
                 }
             }
@@ -461,7 +500,6 @@ function parseOCRResult(text) {
         appState.studentName = name;
     }
     if (group) {
-        // extract just numbers if mixed
         const num = group.replace(/[^\d0-9٠-٩]/g, '');
         if (num) {
             document.getElementById('inputGroup').value = num;
@@ -473,68 +511,77 @@ function parseOCRResult(text) {
         appState.weekNumber = week;
     }
 
-    // 2. Fixed Wird
-    // This is harder because it's usually multi-line vertical text. 
-    // We might just look for the headers and then take "everything" until the next section?
-    // Or just look for specific known phrases.
-    // For now, let's skip complex vertical text parsing unless we find simple keywords.
-
     // 3. Daily Content
-    // Strategy: Look for lines that start with or contain a Day name.
-    // The content is usually in the same line or next lines.
-    // However, in a table structure read by OCR, lines might be mixed.
-    // We will assume "DayName ... Content" or "Content ... DayName" structure.
-    
-    // We need to match rows in appState
     let newRows = JSON.parse(JSON.stringify(appState.rows));
     
-    // Map of day names to index
+    // Map of normalized day names to index
     const dayMap = {};
-    daysOfWeek.forEach((d, i) => dayMap[d] = i);
+    daysOfWeek.forEach((d, i) => dayMap[normalizeText(d)] = i);
 
-    for (let line of lines) {
-        // Check if line contains a day
-        let foundDay = null;
-        for (let day of daysOfWeek) {
-            if (line.includes(day)) {
-                foundDay = day;
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const normLine = normalizedLines[i];
+
+        let foundDayIndex = -1;
+        
+        // Check for day name
+        for (let dayNorm in dayMap) {
+            // Check exact word match to avoid partials like 'الخميس' matching inside other words if any
+            // using simple includes is usually okay for these specific day names
+            if (normLine.includes(dayNorm)) {
+                foundDayIndex = dayMap[dayNorm];
                 break;
             }
         }
 
-        if (foundDay) {
-            const index = dayMap[foundDay];
-            // Remove the day name from the line to see what's left
-            let content = line.replace(foundDay, '').trim();
-            // remove artifacts
+        if (foundDayIndex !== -1) {
+            // Found a day. Content is either on this line (after day) or next line.
+            // Let's look at this line first.
+            // Remove the day name
+            let content = line.replace(daysOfWeek[foundDayIndex], '').trim();
             content = content.replace(/^[:.\-–|]+/, '').replace(/[:.\-–|]+$/, '').trim();
-            
+
+            // If empty, look at next line
+            if (content.length < 3 && i + 1 < lines.length) {
+                // Check if next line is NOT another day
+                const nextLineNorm = normalizedLines[i+1];
+                let isNextDay = false;
+                for (let d in dayMap) { if (nextLineNorm.includes(d)) isNextDay = true; }
+                
+                if (!isNextDay) {
+                    content = lines[i+1].trim(); 
+                    i++; // Skip next line since we used it
+                }
+            }
+
             if (content.length > 2) {
-                // Try to guess if it is a Surah range or Text
-                // Check if "سورة" exists
-                if (content.includes('سورة')) {
-                    newRows[index].type = 'range';
+                 // Try to guess if it is a Surah range or Text
+                 // Check if "سورة" exists
+                 const normContent = normalizeText(content);
+                 if (normContent.includes('سوره') || normContent.includes('سورة')) {
+                    newRows[foundDayIndex].type = 'range';
                     
-                    // Try to extract Surah Name
-                    const surahMatch = content.match(/سورة\s+([\u0600-\u06FF\s]+)/);
+                    // improved surah extraction
+                    const surahMatch = content.match(/(?:سورة|سوره)\s+([\u0600-\u06FF\s]+)/);
                     if (surahMatch) {
-                        newRows[index].surah = surahMatch[1].trim().split(' ')[0]; // Take first word after surah usually
+                        // Take up to 2 words for Surah name (e.g. Al Imran)
+                        let rawName = surahMatch[1].trim().split(' ');
+                        let finalName = rawName[0];
+                        if(rawName.length > 1 && (rawName[1] === 'عمران' || rawName[0] === 'ال')) {
+                            finalName += ' ' + rawName[1];
+                        }
+                        newRows[foundDayIndex].surah = finalName;
                     }
 
                     // Try to extract numbers
-                    // Look for patterns like "from ... to ..." or just numbers
-                    // Matches arabic or english digits
                     const numbers = content.match(/([0-9٠-٩]+)/g);
                     if (numbers && numbers.length >= 2) {
-                        newRows[index].from = numbers[0];
-                        newRows[index].to = numbers[1];
+                        newRows[foundDayIndex].from = numbers[0];
+                        newRows[foundDayIndex].to = numbers[1];
                     }
                 } else {
-                    // Assume text
-                    // If it looks like just numbers, maybe it failed range detection
-                    // But safe default is text
-                    newRows[index].type = 'text';
-                    newRows[index].text = content;
+                    newRows[foundDayIndex].type = 'text';
+                    newRows[foundDayIndex].text = content;
                 }
             }
         }
