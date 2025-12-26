@@ -1,48 +1,225 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>انشاء جدول حفظ</title>
-
+    
     <!-- استيراد Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-
+    
     <!-- استيراد الخطوط -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;600&display=swap"
-        rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Tajawal:wght@400;500;700;800&family=Cairo:wght@400;600&display=swap" rel="stylesheet">
+    
     <!-- html2canvas -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
+    <style>
+        /* --- متغيرات الثيم (الافتراضي: رجال/الجبال الرواسي) --- */
+        :root {
+            --primary-gold: #c5a059;
+            --primary-dark: #1a3c34; /* زيتي غامق */
+            --primary-cream: #f9f7f2;
+            --accent-wood: #5d4037;
+            --bg-pattern-opacity: 0.08;
+        }
 
+        /* --- ثيم النساء (الراسخون - عنابي ملكي) --- */
+        body.theme-female {
+            --primary-dark: #630825; /* عنابي ملكي */
+            --primary-gold: #d4a373; /* ذهبي وردي قليلاً */
+            --accent-wood: #4a0404;
+        }
 
+        body { 
+            font-family: 'Tajawal', sans-serif; 
+            background-color: #f0ebe0;
+            /* خلفية زخرفية */
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c5a059' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            overflow-x: hidden; 
+            transition: background-color 0.5s ease;
+        }
+        
+        .font-serif { font-family: 'Amiri', serif; }
+        .historical-font { font-family: 'Amiri', serif; }
 
-    <link rel="stylesheet" href="style.css">
+        .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+        .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background-color: var(--primary-gold); border-radius: 20px; }
+
+        /* --- تنسيق النص العمودي --- */
+        .vertical-cell {
+            position: relative;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .vertical-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-90deg);
+            width: 540px; 
+            text-align: center;
+            white-space: pre-wrap;
+            direction: rtl;
+            line-height: 1.8;
+            text-rendering: geometricPrecision;
+        }
+
+        /* --- حجم الورقة --- */
+        #pdfContent {
+            width: 250mm !important;
+            min-width: 250mm !important;
+            min-height: 210mm !important;
+            margin-left: auto;
+            margin-right: auto;
+            transform-origin: top center;
+            transition: transform 0.2s ease;
+        }
+
+        /* --- زر الدعم العائم --- */
+        .fab-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 40;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4c1d95, #6d28d9);
+            box-shadow: 0 10px 25px -5px rgba(76, 29, 149, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            cursor: pointer;
+        }
+        .fab-btn:hover {
+            transform: translateY(-5px) scale(1.1) rotate(5deg);
+            box-shadow: 0 20px 30px -10px rgba(76, 29, 149, 0.6);
+        }
+        .plane-icon { animation: float 3s ease-in-out infinite; }
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-3px); }
+        }
+
+        /* --- تنسيقات المودال --- */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(var(--primary-dark-rgb, 26, 60, 52), 0.8); /* سيتم تحديثه بالجافاسكريبت للون الثيم */
+            backdrop-filter: blur(8px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .card-scene { width: 320px; height: 200px; perspective: 1000px; }
+        .card-object {
+            width: 100%; height: 100%; position: relative;
+            transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d; transform: scale(0.8); opacity: 0;
+        }
+        .modal-overlay.active .card-object { transform: scale(1); opacity: 1; }
+        .modal-overlay.active .card-object.flipped { transform: rotateY(180deg) scale(1); }
+        .card-face {
+            position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+            border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px; text-align: center;
+        }
+        .card-front { background: linear-gradient(135deg, #4c1d95, #7e22ce); color: white; border: 2px solid rgba(255,255,255,0.2); }
+        .card-back { background: #fffdf9; transform: rotateY(180deg); color: #4c1d95; border: 4px solid #7e22ce; }
+        .spinner {
+            width: 24px; height: 24px; border: 3px solid #e9d5ff; border-top-color: #7e22ce;
+            border-radius: 50%; animation: spin 1s linear infinite; margin-top: 10px;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        /* AI Box Styles */
+        .ai-box {
+            background: linear-gradient(135deg, #f0ebe0 0%, #fffdf9 100%);
+            border: 1px solid rgba(197, 160, 89, 0.3);
+        }
+
+        /* Toggle Styles */
+        .toggle-checkbox:checked { right: 0; border-color: var(--primary-dark); }
+        .toggle-checkbox:checked + .toggle-label { background-color: var(--primary-dark); }
+        .toggle-checkbox { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
+        .toggle-label { width: 36px; height: 20px; background-color: #ccc; display: block; border-radius: 100px; position: relative; cursor: pointer; transition: background-color 0.3s; }
+        .toggle-label:after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: #fff; border-radius: 90px; transition: 0.3s; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
+        .toggle-checkbox:checked + .toggle-label:after { left: calc(100% - 2px); transform: translateX(-100%); }
+
+        /* --- Team Selection Modal Styles --- */
+        .team-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .team-card:hover { transform: translateY(-5px); }
+        .team-card.male:hover { border-color: #1a3c34; background-color: #f0fdf4; }
+        .team-card.female:hover { border-color: #630825; background-color: #fff0f5; }
+    </style>
 </head>
+<body class="min-h-screen pb-24 transition-colors duration-500">
 
-<body class="min-h-screen pb-24">
+    <!-- Team Selection Modal (يظهر أول مرة فقط) -->
+    <div id="teamSelectionModal" class="modal-overlay active" style="z-index: 10000;">
+        <div class="bg-[#fffdf9] p-8 rounded-3xl shadow-2xl max-w-md w-full mx-4 border-4 border-[#c5a059] text-center relative overflow-hidden transform scale-100 transition-transform duration-300">
+            <!-- زخرفة بسيطة -->
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#1a3c34] via-[#c5a059] to-[#630825]"></div>
+            
+            <h2 class="text-2xl font-bold text-[#5d4037] mb-2 historical-font">مرحباً بكم في منصة الحفظ</h2>
+            <p class="text-sm text-gray-500 mb-8">يرجى اختيار المجموعة للمتابعة</p>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <!-- خيار الرجال -->
+                <div onclick="selectTeam('male')" class="team-card male bg-white p-4 rounded-xl shadow-md flex flex-col items-center gap-3 group">
+                    <div class="w-16 h-16 rounded-full bg-[#1a3c34] text-[#c5a059] flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 transition-transform">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21v-8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8"/><path d="M5 11V7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v4"/><path d="M8 5V3"/><path d="M16 5V3"/><path d="M12 11V3"/></svg>
+                    </div>
+                    <h3 class="font-bold text-[#1a3c34]">الجبال الرواسي</h3>
+                    <span class="text-[10px] text-gray-400">للرجال</span>
+                </div>
 
-    <!-- Modal -->
+                <!-- خيار النساء -->
+                <div onclick="selectTeam('female')" class="team-card female bg-white p-4 rounded-xl shadow-md flex flex-col items-center gap-3 group">
+                    <div class="w-16 h-16 rounded-full bg-[#630825] text-[#d4a373] flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 transition-transform">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+                    </div>
+                    <h3 class="font-bold text-[#630825]">الراسخون</h3>
+                    <span class="text-[10px] text-gray-400">للنساء</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal InstaPay -->
     <div id="instapayModal" class="modal-overlay">
         <div class="card-scene">
             <div id="cardObject" class="card-object">
                 <div class="card-face card-front">
-                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
-                        stroke-linecap="round" stroke-linejoin="round" class="mb-3">
-                        <rect x="2" y="6" width="20" height="12" rx="2" />
-                        <circle cx="12" cy="12" r="2" />
-                        <path d="M6 12h.01M18 12h.01" />
+                    <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-3">
+                        <rect x="2" y="6" width="20" height="12" rx="2"/>
+                        <circle cx="12" cy="12" r="2"/>
+                        <path d="M6 12h.01M18 12h.01"/>
                     </svg>
                     <h3 class="text-2xl font-bold tracking-wider">InstaPay</h3>
                     <p class="text-sm opacity-80 mt-1">دعم آمن وسريع</p>
                 </div>
                 <div class="card-face card-back">
                     <h3 class="text-lg font-bold mb-2">شكراً لدعمكم ❤️</h3>
-                    <p class="text-sm text-slate-600 leading-relaxed">سيتم تحويلك الآن لدعم مطور الموقع مادياً عبر تطبيق
-                        انستا باي..</p>
+                    <p class="text-sm text-slate-600 leading-relaxed">سيتم تحويلك الآن لدعم مطور الموقع مادياً عبر تطبيق انستا باي..</p>
                     <div class="spinner"></div>
                 </div>
             </div>
@@ -50,132 +227,96 @@
     </div>
 
     <!-- Header -->
-    <header class="bg-[#1a3c34] text-[#f9f7f2] sticky top-0 z-50 shadow-lg border-b-4 border-[#c5a059]">
+    <header style="background-color: var(--primary-dark);" class="text-[#f9f7f2] sticky top-0 z-50 shadow-lg border-b-4 border-[var(--primary-gold)] transition-colors duration-500">
         <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none"
-                style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;"></div>
-
+            <div class="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none" style="background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 20px 20px;"></div>
+            
             <div class="flex items-center gap-3 relative z-10">
                 <div class="relative">
-                    <img src="logo.jpg" onerror="this.src='https://via.placeholder.com/150/1a3c34/c5a059?text=Quran'"
-                        alt="شعار الموقع"
-                        class="w-14 h-14 rounded-full border-2 border-[#c5a059] shadow-md object-cover bg-white p-0.5">
+                    <img src="/logo.jpg" onerror="this.src='https://via.placeholder.com/150/1a3c34/c5a059?text=Quran'" alt="شعار الموقع" style="border-color: var(--primary-gold);" class="w-14 h-14 rounded-full border-2 shadow-md object-cover bg-white p-0.5">
                 </div>
                 <div>
-                    <h1 class="text-xl font-bold leading-tight text-[#eec96d] historical-font">انشاء جدول حفظ</h1>
+                    <h1 style="color: var(--primary-gold);" class="text-xl font-bold leading-tight historical-font">انشاء جدول حفظ</h1>
                     <p class="text-xs text-emerald-100/80 font-light flex items-center gap-1">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor"
-                            stroke-width="2">
-                            <path
-                                d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5 4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-                        </svg>
-                        هدية من مجموعة الجبال الرواسي
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5 4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                        هدية من <span class="team-name-text">مجموعة الجبال الرواسي</span>
                     </p>
                 </div>
             </div>
-
-            <div class="flex items-center gap-2 relative z-10">
-                <button onclick="downloadImage()" id="downloadBtn"
-                    class="flex items-center gap-2 bg-[#0f2420] hover:bg-[#2c584e] text-[#c5a059] px-5 py-2 rounded-full text-sm font-bold shadow-lg transition border border-[#c5a059]/30 relative z-10 active:scale-95 disabled:opacity-50">
-                    <span class="hidden md:inline">تحميل صورة</span>
-                    <span class="md:hidden">تحميل</span>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                        <circle cx="8.5" cy="8.5" r="1.5" />
-                        <polyline points="21 15 16 10 5 21" />
-                    </svg>
-                </button>
-            </div>
+            
+            <button onclick="downloadImage()" id="downloadBtn" class="flex items-center gap-2 bg-black/20 hover:bg-black/30 text-[var(--primary-gold)] px-5 py-2 rounded-full text-sm font-bold shadow-lg transition border border-[var(--primary-gold)]/30 relative z-10 active:scale-95 disabled:opacity-50">
+                <span class="hidden md:inline">تحميل صورة</span>
+                <span class="md:hidden">تحميل</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </button>
         </div>
     </header>
 
     <div onclick="openInstaPayEffect()" class="fab-btn" title="دعم ب Instapay">
-        <svg class="plane-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13"></line>
-            <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-        </svg>
+        <svg class="plane-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
     </div>
 
     <main class="max-w-6xl mx-auto p-4 md:p-8 gap-8 grid grid-cols-1 lg:grid-cols-12">
         <!-- Editor Section -->
         <div class="lg:col-span-4 space-y-6 order-2 lg:order-1">
-
+            
             <!-- Smart Order -->
-            <div class="ai-box p-5 rounded-2xl shadow-sm relative overflow-hidden card-shadow">
-                <div class="flex items-center gap-2 mb-3 text-[#1a3c34] font-bold">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path
-                            d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
-                    </svg>
+            <div style="border-color: var(--primary-gold);" class="ai-box p-5 rounded-2xl shadow-sm relative overflow-hidden card-shadow border border-opacity-30">
+                <div style="color: var(--primary-dark);" class="flex items-center gap-2 mb-3 font-bold">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
                     ترتيب الأيام (ذكي)
                 </div>
-
+                
                 <div class="relative">
-                    <input type="text" id="aiInput" onkeydown="if(event.key === 'Enter') smartReorder()"
-                        class="w-full px-4 py-2.5 pl-10 bg-[#fffdf9] border border-[#c5a059]/30 rounded-xl focus:ring-1 focus:ring-[#c5a059] focus:border-[#c5a059] outline-none text-sm text-[#1a3c34] placeholder-gray-400"
-                        placeholder="مثال: ابدأ بـ يوم الأحد">
-                    <button onclick="smartReorder()" id="aiBtn"
-                        class="absolute left-1.5 top-1.5 p-1.5 bg-[#c5a059] hover:bg-[#b8860b] text-[#1a3c34] rounded-lg transition-colors shadow-sm">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2">
-                            <path d="M5 12h14M12 5l7 7-7 7" />
-                        </svg>
+                    <input type="text" id="aiInput" onkeydown="if(event.key === 'Enter') smartReorder()" style="border-color: var(--primary-gold); color: var(--primary-dark); --tw-ring-color: var(--primary-gold);" class="w-full px-4 py-2.5 pl-10 bg-[#fffdf9] border border-opacity-30 rounded-xl focus:ring-1 outline-none text-sm placeholder-gray-400" placeholder="مثال: ابدأ بـ يوم الأحد">
+                    <button onclick="smartReorder()" id="aiBtn" style="background-color: var(--primary-gold); color: var(--primary-dark);" class="absolute left-1.5 top-1.5 p-1.5 rounded-lg transition-colors shadow-sm hover:brightness-110">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                     </button>
                 </div>
-                <p id="aiStatus" class="text-[10px] text-[#5d4037] mt-2 h-4"></p>
-
+                <p id="aiStatus" style="color: var(--accent-wood);" class="text-[10px] mt-2 h-4"></p>
             </div>
 
             <!-- Card: Student Data -->
-            <div class="bg-[#fffdf9] p-6 rounded-2xl shadow-sm border border-[#c5a059]/30 card-shadow">
-                <h2 class="text-lg font-bold text-[#1a3c34] mb-4 flex items-center gap-2 historical-font">
-                    <div class="w-1.5 h-6 bg-[#c5a059] rounded-full"></div>
+            <div style="border-color: var(--primary-gold);" class="bg-[#fffdf9] p-6 rounded-2xl shadow-sm border border-opacity-30 card-shadow">
+                <h2 style="color: var(--primary-dark);" class="text-lg font-bold mb-4 flex items-center gap-2 historical-font">
+                    <div style="background-color: var(--primary-gold);" class="w-1.5 h-6 rounded-full"></div>
                     بيانات الطالب
                 </h2>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-xs font-bold text-[#5d4037] mb-1.5">اسم الطالب</label>
-                        <input type="text" id="inputName" oninput="updateData()"
-                            class="w-full px-4 py-3 bg-[#f9f7f2] border border-[#d1d5db] rounded-xl focus:ring-1 focus:ring-[#c5a059] focus:border-[#c5a059] outline-none text-[#1a3c34] text-base"
-                            value="عمرو">
+                        <label style="color: var(--accent-wood);" class="block text-xs font-bold mb-1.5">اسم الطالب</label>
+                        <input type="text" id="inputName" oninput="updateData()" style="color: var(--primary-dark); --tw-ring-color: var(--primary-gold); border-color: #d1d5db;" class="w-full px-4 py-3 bg-[#f9f7f2] border rounded-xl focus:ring-1 focus:border-[var(--primary-gold)] outline-none text-base" value="عمرو">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-[#5d4037] mb-1.5">رقم المجموعة</label>
-                        <input type="text" id="inputGroup" oninput="updateData()"
-                            class="w-full px-4 py-3 bg-[#f9f7f2] border border-[#d1d5db] rounded-xl focus:ring-1 focus:ring-[#c5a059] focus:border-[#c5a059] outline-none text-[#1a3c34] text-base"
-                            value="1">
+                        <label style="color: var(--accent-wood);" class="block text-xs font-bold mb-1.5">رقم المجموعة</label>
+                        <input type="text" id="inputGroup" oninput="updateData()" style="color: var(--primary-dark); --tw-ring-color: var(--primary-gold); border-color: #d1d5db;" class="w-full px-4 py-3 bg-[#f9f7f2] border rounded-xl focus:ring-1 focus:border-[var(--primary-gold)] outline-none text-base" value="1">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-[#5d4037] mb-1.5">عنوان الأسبوع</label>
-                        <input type="text" id="inputWeek" oninput="updateData()"
-                            class="w-full px-4 py-3 bg-[#f9f7f2] border border-[#d1d5db] rounded-xl focus:ring-1 focus:ring-[#c5a059] focus:border-[#c5a059] outline-none text-[#1a3c34] text-base"
-                            value="الثاني">
+                        <label style="color: var(--accent-wood);" class="block text-xs font-bold mb-1.5">عنوان الأسبوع</label>
+                        <input type="text" id="inputWeek" oninput="updateData()" style="color: var(--primary-dark); --tw-ring-color: var(--primary-gold); border-color: #d1d5db;" class="w-full px-4 py-3 bg-[#f9f7f2] border rounded-xl focus:ring-1 focus:border-[var(--primary-gold)] outline-none text-base" value="الثاني">
                     </div>
                 </div>
             </div>
 
             <!-- Card: Fixed Wird -->
-            <div class="bg-[#fffdf9] p-6 rounded-2xl shadow-sm border border-[#c5a059]/30 card-shadow">
-                <h2 class="text-lg font-bold text-[#1a3c34] mb-4 flex items-center gap-2 historical-font">
-                    <div class="w-1.5 h-6 bg-[#1a3c34] rounded-full"></div>
+            <div style="border-color: var(--primary-gold);" class="bg-[#fffdf9] p-6 rounded-2xl shadow-sm border border-opacity-30 card-shadow">
+                <h2 style="color: var(--primary-dark);" class="text-lg font-bold mb-4 flex items-center gap-2 historical-font">
+                    <div style="background-color: var(--primary-dark);" class="w-1.5 h-6 rounded-full"></div>
                     الأوراد الثابتة
                 </h2>
                 <div class="space-y-6">
                     <!-- Far Past -->
                     <div>
                         <div class="flex items-center justify-between mb-2">
-                            <label class="block text-xs font-bold text-[#5d4037]">الماضي البعيد</label>
+                            <label style="color: var(--accent-wood);" class="block text-xs font-bold">الماضي البعيد</label>
                             <div class="flex items-center gap-2">
                                 <span class="text-[10px] text-gray-500">تقسيم يومي</span>
-                                <input type="checkbox" id="toggleFarPast" class="toggle-checkbox"
-                                    onchange="toggleMode('farPast')">
+                                <input type="checkbox" id="toggleFarPast" class="toggle-checkbox" onchange="toggleMode('farPast')">
                                 <label for="toggleFarPast" class="toggle-label"></label>
                             </div>
                         </div>
                         <div id="farPastMergedContainer">
-                            <textarea id="inputFarPast" oninput="updateData()" rows="2"
-                                class="w-full px-3 py-3 bg-[#f9f7f2] border border-[#d1d5db] rounded-xl focus:border-[#1a3c34] outline-none text-sm text-[#1a3c34]">-</textarea>
+                            <textarea id="inputFarPast" oninput="updateData()" rows="2" style="color: var(--primary-dark); --tw-ring-color: var(--primary-dark); border-color: #d1d5db;" class="w-full px-3 py-3 bg-[#f9f7f2] border rounded-xl focus:border-[var(--primary-dark)] outline-none text-sm">-</textarea>
                         </div>
                         <div id="farPastDailyContainer" class="hidden space-y-4"></div>
                     </div>
@@ -183,25 +324,22 @@
                     <!-- Near Past -->
                     <div>
                         <div class="flex items-center justify-between mb-2">
-                            <label class="block text-xs font-bold text-[#5d4037]">الماضي القريب</label>
+                            <label style="color: var(--accent-wood);" class="block text-xs font-bold">الماضي القريب</label>
                             <div class="flex items-center gap-2">
                                 <span class="text-[10px] text-gray-500">تقسيم يومي</span>
-                                <input type="checkbox" id="toggleNearPast" class="toggle-checkbox"
-                                    onchange="toggleMode('nearPast')">
+                                <input type="checkbox" id="toggleNearPast" class="toggle-checkbox" onchange="toggleMode('nearPast')">
                                 <label for="toggleNearPast" class="toggle-label"></label>
                             </div>
                         </div>
                         <div id="nearPastMergedContainer">
-                            <textarea id="inputNearPast" oninput="updateData()" rows="2"
-                                class="w-full px-3 py-3 bg-[#f9f7f2] border border-[#d1d5db] rounded-xl focus:border-[#1a3c34] outline-none text-sm text-[#1a3c34]">تسميع من أول سورة البقرة إلى آية ٢٥ يومياً</textarea>
+                            <textarea id="inputNearPast" oninput="updateData()" rows="2" style="color: var(--primary-dark); --tw-ring-color: var(--primary-dark); border-color: #d1d5db;" class="w-full px-3 py-3 bg-[#f9f7f2] border rounded-xl focus:border-[var(--primary-dark)] outline-none text-sm">تسميع من أول سورة البقرة إلى آية ٢٥ يومياً</textarea>
                         </div>
                         <div id="nearPastDailyContainer" class="hidden space-y-4"></div>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-[#5d4037] mb-1.5">التحضير</label>
-                        <textarea id="inputPrep" oninput="updateData()" rows="3"
-                            class="w-full px-3 py-3 bg-[#f9f7f2] border border-[#d1d5db] rounded-xl focus:border-[#1a3c34] outline-none text-sm text-[#1a3c34]">(( تلاوة ربع ))
+                        <label style="color: var(--accent-wood);" class="block text-xs font-bold mb-1.5">التحضير</label>
+                        <textarea id="inputPrep" oninput="updateData()" rows="3" style="color: var(--primary-dark); --tw-ring-color: var(--primary-dark); border-color: #d1d5db;" class="w-full px-3 py-3 bg-[#f9f7f2] border rounded-xl focus:border-[var(--primary-dark)] outline-none text-sm">(( تلاوة ربع ))
 (( أتأمرون الناس بالبر ))
 والصلاة بالمحفوظ على مدار اليوم</textarea>
                     </div>
@@ -209,9 +347,9 @@
             </div>
 
             <!-- Daily Hifz -->
-            <div class="bg-[#fffdf9] p-6 rounded-2xl shadow-sm border border-[#c5a059]/30 card-shadow">
-                <h2 class="text-lg font-bold text-[#1a3c34] mb-4 flex items-center gap-2 historical-font">
-                    <div class="w-1.5 h-6 bg-[#c5a059] rounded-full"></div>
+            <div style="border-color: var(--primary-gold);" class="bg-[#fffdf9] p-6 rounded-2xl shadow-sm border border-opacity-30 card-shadow">
+                <h2 style="color: var(--primary-dark);" class="text-lg font-bold mb-4 flex items-center gap-2 historical-font">
+                    <div style="background-color: var(--primary-gold);" class="w-1.5 h-6 rounded-full"></div>
                     الحفظ اليومي
                 </h2>
                 <div id="rowsContainer" class="space-y-4"></div>
@@ -220,91 +358,507 @@
 
         <!-- Preview Section -->
         <div class="lg:col-span-8 order-1 lg:order-2">
-            <div id="previewContainer"
-                class="bg-[#e6e2d3] rounded-3xl p-2 md:p-8 border-2 border-[#c5a059]/20 flex items-start justify-center overflow-hidden min-h-[300px] shadow-inner">
-
-                <div id="pdfContent" class="bg-white shadow-2xl relative box-border p-8 origin-top"
-                    style="font-family: 'Amiri', 'Cairo', serif;">
-
-                    <div
-                        class="flex items-start justify-between mb-6 border-b-2 border-double border-[#c5a059]/30 pb-4">
+            <div id="previewContainer" style="border-color: rgba(197, 160, 89, 0.2);" class="bg-[#e6e2d3] rounded-3xl p-2 md:p-8 border-2 flex items-start justify-center overflow-hidden min-h-[300px] shadow-inner">
+                
+                <div id="pdfContent" class="bg-white shadow-2xl relative box-border p-8 origin-top" style="font-family: 'Amiri', 'Cairo', serif;">
+                    
+                    <div style="border-color: rgba(197, 160, 89, 0.3);" class="flex items-start justify-between mb-6 border-b-2 border-double pb-4">
                         <div class="text-right w-1/2 pt-2">
-                            <h2 class="text-5xl font-bold text-[#1a3c34] mb-2 leading-tight historical-font">
-                                الأسبوع <span id="previewWeek" class="text-[#c5a059]">الثاني</span>
+                            <h2 style="color: var(--primary-dark);" class="text-5xl font-bold mb-2 leading-tight historical-font">
+                                الأسبوع <span id="previewWeek" style="color: var(--primary-gold);">الثاني</span>
                             </h2>
                         </div>
                         <div class="w-1/2 flex flex-col items-end gap-2">
-                            <div
-                                class="bg-[#fffdf9] border-2 border-[#c5a059] rounded-xl px-6 py-3 shadow-sm w-fit min-w-[200px] relative overflow-hidden group">
-                                <div class="absolute top-0 right-0 w-1.5 h-full bg-[#1a3c34]"></div>
-                                <div
-                                    class="flex items-center justify-between gap-4 mb-2 border-b border-[#c5a059]/20 pb-2">
-                                    <span class="text-xs font-bold text-[#5d4037]">الطالب</span>
-                                    <span id="previewName" class="text-lg font-bold text-[#1a3c34]">عمرو</span>
+                            <div style="border-color: var(--primary-gold);" class="bg-[#fffdf9] border-2 rounded-xl px-6 py-3 shadow-sm w-fit min-w-[200px] relative overflow-hidden group">
+                                <div style="background-color: var(--primary-dark);" class="absolute top-0 right-0 w-1.5 h-full"></div>
+                                <div style="border-color: rgba(197, 160, 89, 0.2);" class="flex items-center justify-between gap-4 mb-2 border-b pb-2">
+                                    <span style="color: var(--accent-wood);" class="text-xs font-bold">الطالب</span>
+                                    <span id="previewName" style="color: var(--primary-dark);" class="text-lg font-bold">عمرو</span>
                                 </div>
                                 <div class="flex items-center justify-between gap-4">
-                                    <span class="text-xs font-bold text-[#5d4037]">المجموعة</span>
-                                    <span id="previewGroup" class="text-lg font-bold font-serif text-[#c5a059]">1</span>
+                                    <span style="color: var(--accent-wood);" class="text-xs font-bold">المجموعة</span>
+                                    <span id="previewGroup" style="color: var(--primary-gold);" class="text-lg font-bold font-serif">1</span>
                                 </div>
                             </div>
-                            <p class="text-[10px] text-[#1a3c34] font-medium flex items-center gap-1 opacity-80 pl-1">
-                                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                                    <path
-                                        d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5 4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
-                                </svg>
-                                هدية من مجموعة الجبال الرواسي
+                            <p style="color: var(--primary-dark);" class="text-[10px] font-medium flex items-center gap-1 opacity-80 pl-1">
+                                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5 4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                                هدية من <span class="team-name-text">مجموعة الجبال الرواسي</span>
                             </p>
                         </div>
                     </div>
 
-                    <div class="w-full border-2 border-[#1a3c34] rounded-lg overflow-hidden shadow-sm">
-                        <div
-                            class="flex bg-[#1a3c34] border-b-2 border-[#1a3c34] font-extrabold text-[#f9f7f2] text-2xl">
-                            <div class="w-[10%] p-3 text-center border-l-2 border-[#c5a059]">اليوم</div>
-                            <div class="w-[15%] p-3 text-center border-l-2 border-[#c5a059]">الماضي البعيد</div>
-                            <div class="w-[25%] p-3 text-center border-l-2 border-[#c5a059]">الماضي القريب</div>
-                            <div class="w-[25%] p-3 text-center border-l-2 border-[#c5a059]">الحفظ الجديد</div>
+                    <div style="border-color: var(--primary-dark);" class="w-full border-2 rounded-lg overflow-hidden shadow-sm">
+                        <div style="background-color: var(--primary-dark); border-color: var(--primary-dark);" class="flex border-b-2 font-extrabold text-[#f9f7f2] text-2xl">
+                            <div style="border-color: var(--primary-gold);" class="w-[10%] p-3 text-center border-l-2">اليوم</div>
+                            <div style="border-color: var(--primary-gold);" class="w-[15%] p-3 text-center border-l-2">الماضي البعيد</div>
+                            <div style="border-color: var(--primary-gold);" class="w-[25%] p-3 text-center border-l-2">الماضي القريب</div>
+                            <div style="border-color: var(--primary-gold);" class="w-[25%] p-3 text-center border-l-2">الحفظ الجديد</div>
                             <div class="w-[25%] p-3 text-center">التحضير</div>
                         </div>
 
                         <div class="flex h-[550px]">
                             <!-- Days Column -->
-                            <div class="w-[10%] flex flex-col border-l-2 border-[#1a3c34] bg-[#f0ebe0] font-bold text-2xl text-[#1a3c34]"
-                                id="previewDaysCol"></div>
+                            <div style="border-color: var(--primary-dark); background-color: #f0ebe0; color: var(--primary-dark);" class="w-[10%] flex flex-col border-l-2 font-bold text-2xl" id="previewDaysCol"></div>
 
                             <!-- Far Past -->
-                            <div class="w-[15%] border-l-2 border-[#1a3c34] bg-white vertical-cell"
-                                id="previewFarPastCol"></div>
+                            <div style="border-color: var(--primary-dark);" class="w-[15%] border-l-2 bg-white vertical-cell" id="previewFarPastCol"></div>
 
                             <!-- Near Past -->
-                            <div class="w-[25%] border-l-2 border-[#1a3c34] bg-white vertical-cell"
-                                id="previewNearPastCol"></div>
+                            <div style="border-color: var(--primary-dark);" class="w-[25%] border-l-2 bg-white vertical-cell" id="previewNearPastCol"></div>
 
                             <!-- New Hifz -->
-                            <div class="w-[25%] flex flex-col border-l-2 border-[#1a3c34]" id="previewNewHifzCol"></div>
+                            <div style="border-color: var(--primary-dark);" class="w-[25%] flex flex-col border-l-2" id="previewNewHifzCol"></div>
 
                             <!-- Prep -->
                             <div class="w-[25%] bg-[#fffcf5] vertical-cell">
-                                <div id="previewPrep" class="vertical-text font-bold text-xl text-[#1a3c34]"
-                                    data-color="#1a3c34"></div>
+                                 <div id="previewPrep" style="color: var(--primary-dark);" class="vertical-text font-bold text-xl" data-color-variable="--primary-dark"></div>
                             </div>
                         </div>
                     </div>
 
                     <div class="mt-4 flex justify-between items-end opacity-60">
-                        <div class="text-xs text-[#5d4037]">لا تنسوا الدعاء الصالح</div>
+                        <div style="color: var(--accent-wood);" class="text-xs">لا تنسوا الدعاء الصالح</div>
                         <div class="flex gap-1">
-                            <div class="w-2 h-2 rounded-full bg-[#c5a059]"></div>
-                            <div class="w-2 h-2 rounded-full bg-[#1a3c34]"></div>
-                            <div class="w-2 h-2 rounded-full bg-[#5d4037]"></div>
+                            <div style="background-color: var(--primary-gold);" class="w-2 h-2 rounded-full"></div>
+                            <div style="background-color: var(--primary-dark);" class="w-2 h-2 rounded-full"></div>
+                            <div style="background-color: var(--accent-wood);" class="w-2 h-2 rounded-full"></div>
                         </div>
                     </div>
                 </div>
             </div>
-            <p class="text-center text-xs text-[#5d4037] mt-2">يمكنك تكبير الشاشة لرؤية التفاصيل بوضوح</p>
+            <p style="color: var(--accent-wood);" class="text-center text-xs mt-2">يمكنك تكبير الشاشة لرؤية التفاصيل بوضوح</p>
         </div>
     </main>
-    <script src="script.js"></script>
-</body>
 
+    <script>
+        let appState = {
+            studentName: 'عمرو',
+            groupNumber: '1',
+            weekNumber: 'الثاني',
+            isFarPastMerged: true,
+            isNearPastMerged: true,
+            farPast: '-',
+            nearPast: 'تسميع من أول سورة البقرة إلى آية ٢٥ يومياً',
+            preparation: '(( تلاوة ربع ))\n(( أتأمرون الناس بالبر ))\nوالصلاة بالمحفوظ على مدار اليوم',
+            rows: [
+                { day: 'الجمعة', type: 'range', surah: 'البقرة', from: '٢٦', to: '٢٨', text: '', farPast: {type:'text', text:''}, nearPast: {type:'text', text:''} },
+                { day: 'السبت', type: 'range', surah: 'البقرة', from: '٢٦', to: '٣٣', text: '', farPast: {type:'text', text:''}, nearPast: {type:'text', text:''} },
+                { day: 'الأحد', type: 'range', surah: 'البقرة', from: '٢٦', to: '٣٨', text: '', farPast: {type:'text', text:''}, nearPast: {type:'text', text:''} },
+                { day: 'الاثنين', type: 'range', surah: 'البقرة', from: '٢٦', to: '٤٣', text: '', farPast: {type:'text', text:''}, nearPast: {type:'text', text:''} },
+                { day: 'الثلاثاء', type: 'text', from: '', to: '', text: 'تسميع الربع (٣) مرات', farPast: {type:'text', text:''}, nearPast: {type:'text', text:''} },
+                { day: 'الأربعاء', type: 'text', from: '', to: '', text: 'تسميع الربع (٥) مرات', farPast: {type:'text', text:''}, nearPast: {type:'text', text:''} },
+                { day: 'الخميس', type: 'text', from: '', to: '', text: 'تسميع الربع (٧) مرات', farPast: {type:'text', text:''}, nearPast: {type:'text', text:''} },
+            ]
+        };
+
+        const daysOfWeek = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
+
+        // --- Team Selection Logic ---
+        function selectTeam(team) {
+            localStorage.setItem('quran_team_selection', team);
+            applyTeamTheme(team);
+            document.getElementById('teamSelectionModal').classList.remove('active');
+        }
+
+        function applyTeamTheme(team) {
+            const body = document.body;
+            const teamTexts = document.querySelectorAll('.team-name-text');
+            
+            if (team === 'female') {
+                body.classList.add('theme-female');
+                teamTexts.forEach(el => el.innerText = 'مجموعة الراسخون');
+            } else {
+                body.classList.remove('theme-female');
+                teamTexts.forEach(el => el.innerText = 'مجموعة الجبال الرواسي');
+            }
+            // Re-render to update dynamic colors in canvas/preview
+            renderPreview();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTeam = localStorage.getItem('quran_team_selection');
+            if (savedTeam) {
+                document.getElementById('teamSelectionModal').classList.remove('active');
+                applyTeamTheme(savedTeam);
+            }
+            
+            renderEditorRows();
+            renderDailyEditors();
+            renderPreview();
+            fitPreviewToScreen();
+            window.addEventListener('resize', fitPreviewToScreen);
+        });
+
+        function toggleMode(key) {
+            if(key === 'farPast') {
+                appState.isFarPastMerged = !document.getElementById('toggleFarPast').checked;
+                document.getElementById('farPastMergedContainer').classList.toggle('hidden', !appState.isFarPastMerged);
+                document.getElementById('farPastDailyContainer').classList.toggle('hidden', appState.isFarPastMerged);
+            } else if(key === 'nearPast') {
+                appState.isNearPastMerged = !document.getElementById('toggleNearPast').checked;
+                document.getElementById('nearPastMergedContainer').classList.toggle('hidden', !appState.isNearPastMerged);
+                document.getElementById('nearPastDailyContainer').classList.toggle('hidden', appState.isNearPastMerged);
+            }
+            renderPreview();
+        }
+
+        // --- Helper to render specific cell HTML (Updated with CSS Vars) ---
+        function getCellHtml(data, isTextMode) {
+            // Colors are handled by parent DIVs or inline styles generated dynamically
+            const primaryDark = getComputedStyle(document.body).getPropertyValue('--primary-dark').trim();
+            const primaryGold = getComputedStyle(document.body).getPropertyValue('--primary-gold').trim();
+            const accentWood = getComputedStyle(document.body).getPropertyValue('--accent-wood').trim();
+
+            if (!isTextMode) {
+                const surahHtml = data.surah ? `<span class="block text-xl font-bold mb-1 font-serif" style="color: ${primaryDark}">سورة ${data.surah}</span>` : '';
+                return `
+                    <div class="flex flex-col items-center justify-center w-full">
+                        ${surahHtml}
+                        <div class="flex items-center gap-1 text-3xl font-bold dir-ltr leading-none" style="color: ${primaryGold}">
+                            <span class="text-center font-serif" style="color: ${primaryDark}">${data.from || '?'}</span>
+                            <span class="mx-1 text-2xl" style="color: ${primaryGold}">←</span>
+                            <span class="text-center font-serif" style="color: ${primaryDark}">${data.to || '?'}</span>
+                        </div>
+                    </div>`;
+            } else {
+                return `<span class="font-bold text-lg leading-tight" style="color: ${primaryDark}">${data.text || ''}</span>`;
+            }
+        }
+
+        // --- Helper to render row editor ---
+        function renderSingleRowEditor(row, idx, context, containerId) {
+            if (!row[context]) row[context] = { type: 'text', text: '', surah: '', from: '', to: '' };
+            const data = row[context];
+            const isRange = data.type === 'range';
+
+            const div = document.createElement('div');
+            // Using inline styles for dynamic theme update in editors
+            div.className = 'bg-[#fffdf9] p-3 rounded-lg border shadow-sm mb-3';
+            div.style.borderColor = 'rgba(197, 160, 89, 0.2)'; 
+            
+            // Toggle Logic
+            const primaryDark = 'var(--primary-dark)';
+            const activeStyle = `background-color: ${primaryDark}; color: white;`;
+            const inactiveStyle = `color: gray;`;
+
+            div.innerHTML = `
+                <div class="flex justify-between items-center mb-2 pb-2 border-b" style="border-color: rgba(197, 160, 89, 0.1)">
+                    <span class="font-bold text-sm" style="color: var(--primary-dark)">${row.day}</span>
+                    <div class="flex bg-[#f0ebe0] rounded p-0.5 gap-1">
+                        <button onclick="toggleDailyRowType(${idx}, '${context}', 'range')" class="px-2 py-1 rounded text-[10px] font-bold transition-all" style="${isRange ? activeStyle : inactiveStyle}">آيات</button>
+                        <button onclick="toggleDailyRowType(${idx}, '${context}', 'text')" class="px-2 py-1 rounded text-[10px] font-bold transition-all" style="${!isRange ? activeStyle : inactiveStyle}">نص</button>
+                    </div>
+                </div>
+            `;
+
+            if (isRange) {
+                div.innerHTML += `
+                    <div class="flex flex-col gap-2">
+                        <div>
+                            <label class="text-[9px] font-bold mb-0.5 block" style="color: var(--accent-wood)">اسم السورة</label>
+                            <input type="text" value="${data.surah || ''}" oninput="updateDailyRow(${idx}, '${context}', 'surah', this.value)" class="w-full p-2 bg-white border border-[#d1d5db] rounded text-sm focus:ring-1 outline-none" style="--tw-ring-color: var(--primary-gold); border-color: var(--primary-gold);" placeholder="البقرة">
+                        </div>
+                        <div class="flex gap-2">
+                            <div class="flex-1">
+                                <label class="text-[9px] font-bold mb-0.5 block" style="color: var(--accent-wood)">من</label>
+                                <input type="text" value="${data.from || ''}" oninput="updateDailyRow(${idx}, '${context}', 'from', this.value)" class="w-full p-2 bg-white border border-[#d1d5db] rounded text-center text-sm font-bold focus:ring-1 outline-none" style="--tw-ring-color: var(--primary-gold); border-color: var(--primary-gold);">
+                            </div>
+                            <div class="flex-1">
+                                <label class="text-[9px] font-bold mb-0.5 block" style="color: var(--accent-wood)">إلى</label>
+                                <input type="text" value="${data.to || ''}" oninput="updateDailyRow(${idx}, '${context}', 'to', this.value)" class="w-full p-2 bg-white border border-[#d1d5db] rounded text-center text-sm font-bold focus:ring-1 outline-none" style="--tw-ring-color: var(--primary-gold); border-color: var(--primary-gold);">
+                            </div>
+                        </div>
+                    </div>`;
+            } else {
+                div.innerHTML += `
+                    <div>
+                        <label class="text-[9px] font-bold mb-0.5 block" style="color: var(--accent-wood)">النص</label>
+                        <input type="text" value="${data.text || ''}" oninput="updateDailyRow(${idx}, '${context}', 'text', this.value)" class="w-full p-2 bg-white border border-[#d1d5db] rounded text-sm focus:ring-1 outline-none" style="--tw-ring-color: var(--primary-gold); border-color: var(--primary-gold);" placeholder="ورد ${row.day}..">
+                    </div>`;
+            }
+            return div;
+        }
+
+        function renderDailyEditors() {
+            const farContainer = document.getElementById('farPastDailyContainer');
+            farContainer.innerHTML = '';
+            appState.rows.forEach((row, idx) => {
+                farContainer.appendChild(renderSingleRowEditor(row, idx, 'farPast', 'farPastDailyContainer'));
+            });
+
+            const nearContainer = document.getElementById('nearPastDailyContainer');
+            nearContainer.innerHTML = '';
+            appState.rows.forEach((row, idx) => {
+                nearContainer.appendChild(renderSingleRowEditor(row, idx, 'nearPast', 'nearPastDailyContainer'));
+            });
+        }
+
+        function toggleDailyRowType(index, context, type) {
+            if(!appState.rows[index][context]) appState.rows[index][context] = {};
+            appState.rows[index][context].type = type;
+            renderDailyEditors();
+            renderPreview();
+        }
+
+        function updateDailyRow(index, context, field, value) {
+            if(!appState.rows[index][context]) appState.rows[index][context] = { type: 'text' };
+            appState.rows[index][context][field] = value;
+            renderPreview();
+        }
+
+        function smartReorder() {
+            const input = document.getElementById('aiInput').value;
+            const status = document.getElementById('aiStatus');
+            if (!input) return;
+            let foundDay = null;
+            for (const day of daysOfWeek) {
+                if (input.includes(day)) { foundDay = day; break; }
+            }
+            if (foundDay) {
+                reorderDays(foundDay);
+                status.innerText = `تم تعديل البداية إلى: ${foundDay}`;
+                status.className = "text-[10px] mt-2 h-4 font-bold";
+                status.style.color = "var(--primary-dark)";
+            } else {
+                status.innerText = 'لم أتمكن من فهم اليوم، يرجى كتابته بوضوح';
+                status.className = "text-[10px] text-red-600 mt-2 h-4";
+            }
+        }
+
+        function reorderDays(startDay) {
+            const startIndex = daysOfWeek.indexOf(startDay);
+            if (startIndex === -1) return;
+            const newOrder = [...daysOfWeek.slice(startIndex), ...daysOfWeek.slice(0, startIndex)];
+            appState.rows.forEach((row, index) => { row.day = newOrder[index]; });
+            renderEditorRows();
+            renderDailyEditors();
+            renderPreview();
+        }
+
+        function renderEditorRows() {
+            const container = document.getElementById('rowsContainer');
+            container.innerHTML = '';
+            appState.rows.forEach((row, index) => {
+                const div = document.createElement('div');
+                div.className = 'bg-[#fffdf9] p-4 rounded-xl border-2 transition-all shadow-sm mb-4';
+                div.style.borderColor = 'rgba(197, 160, 89, 0.2)';
+                
+                const isRange = row.type === 'range';
+                
+                // Styles
+                const primaryDark = 'var(--primary-dark)';
+                const activeStyle = `background-color: ${primaryDark}; color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);`;
+                const inactiveStyle = `color: gray;`;
+
+                div.innerHTML = `
+                    <div class="flex justify-between items-center mb-3 pb-2 border-b" style="border-color: rgba(197, 160, 89, 0.1)">
+                        <span class="font-bold text-lg" style="color: var(--primary-dark)">${row.day}</span>
+                        <div class="flex bg-[#f0ebe0] rounded-lg p-1 gap-1">
+                            <button onclick="toggleRowType(${index}, 'range')" class="px-3 py-1.5 rounded-md text-xs font-bold transition-all" style="${isRange ? activeStyle : inactiveStyle}">آيات (أرقام)</button>
+                            <button onclick="toggleRowType(${index}, 'text')" class="px-3 py-1.5 rounded-md text-xs font-bold transition-all" style="${!isRange ? activeStyle : inactiveStyle}">نص حر</button>
+                        </div>
+                    </div>
+                `;
+                if (isRange) {
+                    div.innerHTML += `
+                        <div class="flex flex-col gap-3">
+                            <div class="flex flex-col">
+                                <label class="text-[10px] font-bold mb-1" style="color: var(--accent-wood)">اسم السورة</label>
+                                <input type="text" value="${row.surah || ''}" oninput="updateRow(${index}, 'surah', this.value)" class="w-full p-2.5 bg-white border border-[#d1d5db] rounded-lg text-base focus:ring-1 outline-none" style="border-color: var(--primary-gold); --tw-ring-color: var(--primary-gold);" placeholder="مثال: البقرة">
+                            </div>
+                            <div class="flex gap-4">
+                                <div class="flex-1 flex flex-col">
+                                    <label class="text-[10px] font-bold mb-1" style="color: var(--accent-wood)">من آية</label>
+                                    <input type="text" value="${row.from || ''}" oninput="updateRow(${index}, 'from', this.value)" class="w-full p-2.5 bg-white border border-[#d1d5db] rounded-lg text-center text-base font-bold focus:ring-1 outline-none" style="border-color: var(--primary-gold); --tw-ring-color: var(--primary-gold);" placeholder="1">
+                                </div>
+                                <div class="flex items-center justify-center pt-4">
+                                    <svg style="color: var(--primary-gold);" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                                </div>
+                                <div class="flex-1 flex flex-col">
+                                    <label class="text-[10px] font-bold mb-1" style="color: var(--accent-wood)">إلى آية</label>
+                                    <input type="text" value="${row.to || ''}" oninput="updateRow(${index}, 'to', this.value)" class="w-full p-2.5 bg-white border border-[#d1d5db] rounded-lg text-center text-base font-bold focus:ring-1 outline-none" style="border-color: var(--primary-gold); --tw-ring-color: var(--primary-gold);" placeholder="10">
+                                </div>
+                            </div>
+                        </div>`;
+                } else {
+                    div.innerHTML += `
+                        <div class="flex flex-col">
+                            <label class="text-[10px] font-bold mb-1" style="color: var(--accent-wood)">نص الورد</label>
+                            <input type="text" value="${row.text || ''}" oninput="updateRow(${index}, 'text', this.value)" class="w-full p-3 bg-white border border-[#d1d5db] rounded-lg text-base focus:ring-1 outline-none" style="border-color: var(--primary-gold); --tw-ring-color: var(--primary-gold);" placeholder="اكتب المطلوب هنا...">
+                        </div>`;
+                }
+                container.appendChild(div);
+            });
+        }
+
+        function updateRow(index, field, value) {
+            appState.rows[index][field] = value;
+            renderPreview();
+        }
+
+        function toggleRowType(index, type) {
+            appState.rows[index].type = type;
+            renderEditorRows();
+            renderPreview();
+        }
+
+        function updateData() {
+            appState.studentName = document.getElementById('inputName').value;
+            appState.groupNumber = document.getElementById('inputGroup').value;
+            appState.weekNumber = document.getElementById('inputWeek').value;
+            appState.farPast = document.getElementById('inputFarPast').value;
+            appState.nearPast = document.getElementById('inputNearPast').value;
+            appState.preparation = document.getElementById('inputPrep').value;
+            renderPreview();
+        }
+
+        function renderPreview() {
+            document.getElementById('previewName').innerText = appState.studentName;
+            document.getElementById('previewGroup').innerText = appState.groupNumber;
+            document.getElementById('previewWeek').innerText = appState.weekNumber;
+            
+            // Get current theme colors
+            const primaryDark = getComputedStyle(document.body).getPropertyValue('--primary-dark').trim();
+            const primaryGold = getComputedStyle(document.body).getPropertyValue('--primary-gold').trim();
+            const accentWood = getComputedStyle(document.body).getPropertyValue('--accent-wood').trim();
+
+            // Far Past Column
+            const farCol = document.getElementById('previewFarPastCol');
+            farCol.innerHTML = '';
+            if(appState.isFarPastMerged) {
+                farCol.classList.remove('flex', 'flex-col', 'border-t-0'); 
+                farCol.innerHTML = `<div id="previewFarPast" class="vertical-text font-bold text-2xl" style="color: ${primaryDark}" data-color-variable="--primary-dark">${appState.farPast}</div>`;
+            } else {
+                farCol.classList.add('flex', 'flex-col', 'border-t-0');
+                farCol.innerHTML = appState.rows.map(row => `
+                    <div class="flex-1 flex items-center justify-center text-center border-b last:border-b-0 p-1" style="border-color: rgba(197, 160, 89, 0.3)">
+                        ${getCellHtml(row.farPast, row.farPast?.type !== 'range')}
+                    </div>
+                `).join('');
+            }
+
+            // Near Past Column
+            const nearCol = document.getElementById('previewNearPastCol');
+            nearCol.innerHTML = '';
+            if(appState.isNearPastMerged) {
+                nearCol.classList.remove('flex', 'flex-col', 'border-t-0');
+                nearCol.innerHTML = `<div id="previewNearPast" class="vertical-text font-bold text-2xl" style="color: ${accentWood}" data-color-variable="--accent-wood">${appState.nearPast}</div>`;
+            } else {
+                nearCol.classList.add('flex', 'flex-col', 'border-t-0');
+                nearCol.innerHTML = appState.rows.map(row => `
+                    <div class="flex-1 flex items-center justify-center text-center border-b last:border-b-0 p-1" style="border-color: rgba(197, 160, 89, 0.3)">
+                        ${getCellHtml(row.nearPast, row.nearPast?.type !== 'range')}
+                    </div>
+                `).join('');
+            }
+
+            const prepEl = document.getElementById('previewPrep');
+            prepEl.innerText = appState.preparation;
+            prepEl.setAttribute('data-text', appState.preparation);
+
+            const daysCol = document.getElementById('previewDaysCol');
+            const hifzCol = document.getElementById('previewNewHifzCol');
+            daysCol.innerHTML = '';
+            hifzCol.innerHTML = '';
+
+            appState.rows.forEach(row => {
+                daysCol.innerHTML += `<div class="flex-1 flex items-center justify-center border-b last:border-b-0 font-bold text-2xl" style="color: ${primaryDark}; border-color: rgba(197, 160, 89, 0.3)">${row.day}</div>`;
+                hifzCol.innerHTML += `<div class="flex-1 flex items-center justify-center text-center border-b last:border-b-0 p-1 bg-white" style="border-color: rgba(197, 160, 89, 0.3)">${getCellHtml(row, row.type !== 'range')}</div>`;
+            });
+        }
+
+        function drawVerticalText(text, colorVariable) {
+            if (!text) return null;
+            
+            // Get actual color from CSS variable
+            const color = getComputedStyle(document.body).getPropertyValue(colorVariable).trim();
+
+            const tempCanvas = document.createElement('canvas');
+            const ctx = tempCanvas.getContext('2d');
+            const width = 540; const height = 250;
+            tempCanvas.width = width; tempCanvas.height = height;
+            ctx.direction = 'rtl'; ctx.font = 'bold 24px "Tajawal", sans-serif'; ctx.fillStyle = color;
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+            const lines = text.split('\n'); const lineHeight = 45;
+            const startY = (height - ((lines.length - 1) * lineHeight)) / 2;
+            lines.forEach((line, i) => { ctx.fillText(line, width / 2, startY + (i * lineHeight)); });
+            const finalCanvas = document.createElement('canvas');
+            finalCanvas.width = height; finalCanvas.height = width;
+            const fCtx = finalCanvas.getContext('2d');
+            fCtx.translate(0, width); fCtx.rotate(-Math.PI / 2); fCtx.drawImage(tempCanvas, 0, 0);
+            return finalCanvas.toDataURL();
+        }
+
+        async function downloadImage() {
+            const element = document.getElementById('pdfContent');
+            const btn = document.getElementById('downloadBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span class="animate-pulse">جاري المعالجة...</span>';
+            btn.disabled = true;
+            const currentTransform = element.style.transform;
+            element.style.transform = 'scale(1)';
+            try {
+                await document.fonts.ready;
+                const verticalElements = document.querySelectorAll('.vertical-text');
+                const restoreTasks = [];
+                verticalElements.forEach(el => {
+                    const text = el.getAttribute('data-text') || el.innerText;
+                    const colorVar = el.getAttribute('data-color-variable') || '--primary-dark';
+                    const dataUrl = drawVerticalText(text, colorVar);
+                    if (dataUrl) {
+                        const originalHTML = el.innerHTML;
+                        const img = document.createElement('img');
+                        img.src = dataUrl;
+                        el.classList.remove('vertical-text');
+                        el.style.position = 'absolute'; el.style.top = '0'; el.style.left = '0';
+                        el.style.width = '100%'; el.style.height = '100%';
+                        el.style.display = 'flex'; el.style.alignItems = 'center'; el.style.justifyContent = 'center';
+                        el.style.transform = 'none';
+                        el.innerHTML = ''; el.appendChild(img);
+                        restoreTasks.push(() => {
+                            el.innerHTML = originalHTML; el.classList.add('vertical-text');
+                            el.removeAttribute('style');
+                        });
+                    }
+                });
+                const canvas = await html2canvas(element, { scale: 2, useCORS: true, backgroundColor: getComputedStyle(document.body).backgroundColor, scrollY: -window.scrollY, logging: false, width: element.offsetWidth, height: element.offsetHeight });
+                const link = document.createElement('a');
+                link.download = `جدول_الحفظ_${appState.weekNumber}.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 0.95);
+                link.click();
+                restoreTasks.forEach(t => t());
+            } catch (err) { console.error(err); alert("حدث خطأ أثناء إنشاء الصورة."); } 
+            finally { element.style.transform = currentTransform; btn.innerHTML = originalText; btn.disabled = false; }
+        }
+        
+        function openInstaPayEffect() {
+            const modal = document.getElementById('instapayModal');
+            const card = document.getElementById('cardObject');
+            modal.classList.add('active');
+            setTimeout(() => {
+                card.classList.add('flipped');
+                setTimeout(() => {
+                    window.location.href = 'https://ipn.eg/S/shaba1/instapay/0e3P4q';
+                    setTimeout(() => {
+                        modal.classList.remove('active');
+                        card.classList.remove('flipped');
+                    }, 2000);
+                }, 2500);
+            }, 600);
+        }
+
+        function fitPreviewToScreen() {
+            const container = document.getElementById('previewContainer');
+            const content = document.getElementById('pdfContent');
+            if (!container || !content) return;
+            const contentWidth = content.offsetWidth; 
+            const containerWidth = container.clientWidth - 20;
+            let scale = containerWidth / contentWidth;
+            if (scale > 1) scale = 1;
+            content.style.transform = `scale(${scale})`;
+            const scaledHeight = content.offsetHeight * scale;
+            container.style.height = `${scaledHeight + 40}px`;
+        }
+    </script>
+</body>
 </html>
