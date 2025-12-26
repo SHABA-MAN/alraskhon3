@@ -15,19 +15,20 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
-        /* --- متغيرات الثيم --- */
+        /* --- متغيرات الثيم (الافتراضي: رجال/الجبال الرواسي) --- */
         :root {
             --primary-gold: #c5a059;
-            --primary-dark: #1a3c34;
+            --primary-dark: #1a3c34; /* زيتي غامق */
             --primary-cream: #f9f7f2;
             --accent-wood: #5d4037;
             --bg-pattern-opacity: 0.08;
         }
 
+        /* --- ثيم النساء (الراسخون) --- */
         body.theme-female {
-            --primary-dark: #630825;
-            --primary-gold: #d4a373;
-            --accent-wood: #4a0404;
+            --primary-dark: #630825; /* عنابي ملكي غامق */
+            --primary-gold: #d4a373; /* ذهبي هادئ */
+            --accent-wood: #4a0404; /* عنابي مسود */
         }
 
         body { 
@@ -45,6 +46,7 @@
         .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
         .scrollbar-thin::-webkit-scrollbar-thumb { background-color: var(--primary-gold); border-radius: 20px; }
 
+        /* --- تنسيق النص العمودي --- */
         .vertical-cell {
             position: relative;
             height: 100%;
@@ -66,6 +68,7 @@
             text-rendering: geometricPrecision;
         }
 
+        /* --- حجم الورقة --- */
         #pdfContent {
             width: 250mm !important;
             min-width: 250mm !important;
@@ -76,6 +79,7 @@
             transition: transform 0.2s ease;
         }
 
+        /* --- زر الدعم العائم --- */
         .fab-btn {
             position: fixed;
             bottom: 20px;
@@ -104,6 +108,7 @@
             50% { transform: translateY(-3px); }
         }
 
+        /* --- تنسيقات المودال --- */
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -140,11 +145,13 @@
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         
+        /* AI Box Styles */
         .ai-box {
             background: linear-gradient(135deg, #f0ebe0 0%, #fffdf9 100%);
             border: 1px solid rgba(197, 160, 89, 0.3);
         }
 
+        /* Toggle Styles */
         .toggle-checkbox:checked { right: 0; border-color: var(--primary-dark); }
         .toggle-checkbox:checked + .toggle-label { background-color: var(--primary-dark); }
         .toggle-checkbox { position: absolute; opacity: 0; cursor: pointer; height: 0; width: 0; }
@@ -152,7 +159,12 @@
         .toggle-label:after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background-color: #fff; border-radius: 90px; transition: 0.3s; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
         .toggle-checkbox:checked + .toggle-label:after { left: calc(100% - 2px); transform: translateX(-100%); }
 
-        .team-card { cursor: pointer; transition: all 0.3s ease; border: 2px solid transparent; }
+        /* --- Team Selection Modal Styles --- */
+        .team-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
         .team-card:hover { transform: translateY(-5px); }
         .team-card.male:hover { border-color: #1a3c34; background-color: #f0fdf4; }
         .team-card.female:hover { border-color: #630825; background-color: #fff0f5; }
@@ -168,6 +180,7 @@
 </head>
 <body class="min-h-screen pb-24 transition-colors duration-500">
 
+    <!-- شريط التنبيه الأحمر للدعم -->
     <div onclick="window.location.href='https://ipn.eg/S/shaba1/instapay/0e3P4q'" class="w-full bg-[#b8860b] text-white text-center py-2.5 text-xs font-bold cursor-pointer hover:bg-[#a07e26] transition relative z-[60] flex items-center justify-center gap-2 shadow-md">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-pulse"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
         <span>ساهم في دعم المنصة واستمرارها (InstaPay) - اضغط هنا</span>
@@ -233,7 +246,6 @@
                 </div>
                 <div class="flex flex-col">
                     <h1 style="color: var(--primary-gold);" class="text-lg md:text-xl font-bold leading-tight historical-font">انشاء جدول حفظ</h1>
-                    <!-- تم إخفاء الإهداء على الموبايل لتوفير المساحة -->
                     <div class="hidden sm:flex items-center gap-1">
                         <p class="text-xs text-emerald-100/80 font-light flex items-center gap-1">
                             <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5 4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
@@ -243,7 +255,6 @@
                 </div>
             </div>
             
-            <!-- تم تعديل ml-auto إلى mr-auto لضمان المحاذاة لليسار -->
             <div class="flex items-center gap-2 relative z-10 mr-auto sm:mr-0">
                 <div class="relative group">
                     <select id="teamSelector" onchange="selectTeam(this.value)" class="custom-select appearance-none bg-black/20 hover:bg-black/30 text-[var(--primary-gold)] pl-7 pr-2 py-1.5 rounded-full text-[10px] md:text-xs font-bold border border-[var(--primary-gold)]/30 focus:outline-none cursor-pointer transition-colors w-24 md:w-auto">
@@ -269,13 +280,16 @@
     </div>
 
     <main class="max-w-6xl mx-auto p-4 md:p-8 gap-8 grid grid-cols-1 lg:grid-cols-12">
+        <!-- Editor Section -->
         <div class="lg:col-span-4 space-y-6 order-2 lg:order-1">
+            
             <!-- Smart Order -->
             <div style="border-color: var(--primary-gold);" class="ai-box p-5 rounded-2xl shadow-sm relative overflow-hidden card-shadow border border-opacity-30">
                 <div style="color: var(--primary-dark);" class="flex items-center gap-2 mb-3 font-bold">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"/></svg>
                     ترتيب الأيام (ذكي)
                 </div>
+                
                 <div class="relative">
                     <input type="text" id="aiInput" onkeydown="if(event.key === 'Enter') smartReorder()" style="border-color: var(--primary-gold); color: var(--primary-dark); --tw-ring-color: var(--primary-gold);" class="w-full px-4 py-2.5 pl-10 bg-[#fffdf9] border border-opacity-30 rounded-xl focus:ring-1 outline-none text-sm placeholder-gray-400" placeholder="مثال: ابدأ بـ يوم الأحد">
                     <button onclick="smartReorder()" id="aiBtn" style="background-color: var(--primary-gold); color: var(--primary-dark);" class="absolute left-1.5 top-1.5 p-1.5 rounded-lg transition-colors shadow-sm hover:brightness-110">
@@ -406,10 +420,19 @@
                         </div>
 
                         <div class="flex h-[550px]">
+                            <!-- Days Column -->
                             <div style="border-color: var(--primary-dark); background-color: #f0ebe0; color: var(--primary-dark);" class="w-[10%] flex flex-col border-l-2 font-bold text-2xl" id="previewDaysCol"></div>
+
+                            <!-- Far Past -->
                             <div style="border-color: var(--primary-dark);" class="w-[15%] border-l-2 bg-white vertical-cell" id="previewFarPastCol"></div>
+
+                            <!-- Near Past -->
                             <div style="border-color: var(--primary-dark);" class="w-[25%] border-l-2 bg-white vertical-cell" id="previewNearPastCol"></div>
+
+                            <!-- New Hifz -->
                             <div style="border-color: var(--primary-dark);" class="w-[25%] flex flex-col border-l-2" id="previewNewHifzCol"></div>
+
+                            <!-- Prep -->
                             <div class="w-[25%] bg-[#fffcf5] vertical-cell">
                                  <div id="previewPrep" style="color: var(--primary-dark);" class="vertical-text font-bold text-xl" data-color-variable="--primary-dark"></div>
                             </div>
@@ -453,6 +476,7 @@
 
         const daysOfWeek = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
 
+        // --- Team Selection Logic ---
         function selectTeam(team) {
             localStorage.setItem('quran_team_selection', team);
             applyTeamTheme(team);
@@ -506,9 +530,12 @@
             renderPreview();
         }
 
+        // --- Helper to render specific cell HTML (INCREASED FONT SIZE HERE) ---
         function getCellHtml(data, isTextMode) {
+            // Colors are handled by parent DIVs or inline styles generated dynamically
             const primaryDark = getComputedStyle(document.body).getPropertyValue('--primary-dark').trim();
             const primaryGold = getComputedStyle(document.body).getPropertyValue('--primary-gold').trim();
+            const accentWood = getComputedStyle(document.body).getPropertyValue('--accent-wood').trim();
 
             if (!isTextMode) {
                 const surahHtml = data.surah ? `<span class="block text-xl font-bold mb-1 font-serif" style="color: ${primaryDark}">سورة ${data.surah}</span>` : '';
@@ -526,14 +553,18 @@
             }
         }
 
+        // --- Helper to render row editor ---
         function renderSingleRowEditor(row, idx, context, containerId) {
             if (!row[context]) row[context] = { type: 'text', text: '', surah: '', from: '', to: '' };
             const data = row[context];
             const isRange = data.type === 'range';
+
             const div = document.createElement('div');
+            // Using inline styles for dynamic theme update in editors
             div.className = 'bg-[#fffdf9] p-3 rounded-lg border shadow-sm mb-3';
             div.style.borderColor = 'rgba(197, 160, 89, 0.2)'; 
             
+            // Toggle Logic
             const primaryDark = 'var(--primary-dark)';
             const activeStyle = `background-color: ${primaryDark}; color: white;`;
             const inactiveStyle = `color: gray;`;
@@ -547,29 +578,30 @@
                     </div>
                 </div>
             `;
+
             if (isRange) {
                 div.innerHTML += `
-                    <div class="flex flex-col gap-3">
+                    <div class="flex flex-col gap-2">
                         <div>
-                            <label class="text-[10px] font-bold mb-1" style="color: var(--accent-wood)">اسم السورة</label>
-                            <input type="text" value="${data.surah || ''}" oninput="updateDailyRow(${idx}, '${context}', 'surah', this.value)" class="w-full p-2.5 bg-white border border-[#d1d5db] rounded-lg text-sm focus:ring-1 outline-none" style="--tw-ring-color: var(--primary-gold); border-color: var(--primary-gold);" placeholder="البقرة">
+                            <label class="text-[9px] font-bold mb-0.5 block" style="color: var(--accent-wood)">اسم السورة</label>
+                            <input type="text" value="${data.surah || ''}" oninput="updateDailyRow(${idx}, '${context}', 'surah', this.value)" class="w-full p-2 bg-white border border-[#d1d5db] rounded text-sm focus:ring-1 outline-none" style="--tw-ring-color: var(--primary-gold); border-color: var(--primary-gold);" placeholder="البقرة">
                         </div>
-                        <div class="flex gap-4">
+                        <div class="flex gap-2">
                             <div class="flex-1">
-                                <label class="text-[10px] font-bold mb-1" style="color: var(--accent-wood)">من</label>
-                                <input type="text" value="${data.from || ''}" oninput="updateDailyRow(${idx}, '${context}', 'from', this.value)" class="w-full p-2.5 bg-white border border-[#d1d5db] rounded-lg text-center text-sm font-bold focus:ring-1 outline-none" style="--tw-ring-color: var(--primary-gold); border-color: var(--primary-gold);">
+                                <label class="text-[9px] font-bold mb-0.5 block" style="color: var(--accent-wood)">من</label>
+                                <input type="text" value="${data.from || ''}" oninput="updateDailyRow(${idx}, '${context}', 'from', this.value)" class="w-full p-2 bg-white border border-[#d1d5db] rounded text-center text-sm font-bold focus:ring-1 outline-none" style="--tw-ring-color: var(--primary-gold); border-color: var(--primary-gold);">
                             </div>
                             <div class="flex-1">
-                                <label class="text-[10px] font-bold mb-1" style="color: var(--accent-wood)">إلى</label>
-                                <input type="text" value="${data.to || ''}" oninput="updateDailyRow(${idx}, '${context}', 'to', this.value)" class="w-full p-2.5 bg-white border border-[#d1d5db] rounded-lg text-center text-sm font-bold focus:ring-1 outline-none" style="--tw-ring-color: var(--primary-gold); border-color: var(--primary-gold);">
+                                <label class="text-[9px] font-bold mb-0.5 block" style="color: var(--accent-wood)">إلى</label>
+                                <input type="text" value="${data.to || ''}" oninput="updateDailyRow(${idx}, '${context}', 'to', this.value)" class="w-full p-2 bg-white border border-[#d1d5db] rounded text-center text-sm font-bold focus:ring-1 outline-none" style="--tw-ring-color: var(--primary-gold); border-color: var(--primary-gold);">
                             </div>
                         </div>
                     </div>`;
             } else {
                 div.innerHTML += `
                     <div>
-                        <label class="text-[10px] font-bold mb-1" style="color: var(--accent-wood)">النص</label>
-                        <input type="text" value="${data.text || ''}" oninput="updateDailyRow(${idx}, '${context}', 'text', this.value)" class="w-full p-2.5 bg-white border border-[#d1d5db] rounded-lg text-sm focus:ring-1 outline-none" style="--tw-ring-color: var(--primary-gold); border-color: var(--primary-gold);" placeholder="ورد ${row.day}..">
+                        <label class="text-[9px] font-bold mb-0.5 block" style="color: var(--accent-wood)">النص</label>
+                        <input type="text" value="${data.text || ''}" oninput="updateDailyRow(${idx}, '${context}', 'text', this.value)" class="w-full p-2.5 bg-white border border-[#d1d5db] rounded text-sm focus:ring-1 outline-none" style="--tw-ring-color: var(--primary-gold); border-color: var(--primary-gold);" placeholder="ورد ${row.day}..">
                     </div>`;
             }
             return div;
@@ -581,6 +613,7 @@
             appState.rows.forEach((row, idx) => {
                 farContainer.appendChild(renderSingleRowEditor(row, idx, 'farPast', 'farPastDailyContainer'));
             });
+
             const nearContainer = document.getElementById('nearPastDailyContainer');
             nearContainer.innerHTML = '';
             appState.rows.forEach((row, idx) => {
@@ -637,7 +670,10 @@
                 const div = document.createElement('div');
                 div.className = 'bg-[#fffdf9] p-4 rounded-xl border-2 transition-all shadow-sm mb-4';
                 div.style.borderColor = 'rgba(197, 160, 89, 0.2)';
+                
                 const isRange = row.type === 'range';
+                
+                // Styles
                 const primaryDark = 'var(--primary-dark)';
                 const activeStyle = `background-color: ${primaryDark}; color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);`;
                 const inactiveStyle = `color: gray;`;
@@ -685,6 +721,31 @@
 
         function updateRow(index, field, value) {
             appState.rows[index][field] = value;
+
+            // Auto-propagate 'from' verse from first day to others
+            if (index === 0 && field === 'from') {
+                // Update state for subsequent rows
+                for (let i = 1; i < appState.rows.length; i++) {
+                    if (appState.rows[i].type === 'range') {
+                        appState.rows[i].from = value;
+                    }
+                }
+                
+                // Update DOM elements manually to preserve focus on the current element
+                const container = document.getElementById('rowsContainer');
+                if (container) {
+                    const rowDivs = container.children;
+                    for (let i = 1; i < rowDivs.length; i++) {
+                        if (appState.rows[i].type === 'range') {
+                            const inputs = rowDivs[i].querySelectorAll('input');
+                            if (inputs[1]) {
+                                inputs[1].value = value;
+                            }
+                        }
+                    }
+                }
+            }
+
             renderPreview();
         }
 
@@ -709,7 +770,12 @@
             document.getElementById('previewGroup').innerText = appState.groupNumber;
             document.getElementById('previewWeek').innerText = appState.weekNumber;
             
+            // Get current theme colors
             const primaryDark = getComputedStyle(document.body).getPropertyValue('--primary-dark').trim();
+            const primaryGold = getComputedStyle(document.body).getPropertyValue('--primary-gold').trim();
+            const accentWood = getComputedStyle(document.body).getPropertyValue('--accent-wood').trim();
+
+            // Far Past Column
             const farCol = document.getElementById('previewFarPastCol');
             farCol.innerHTML = '';
             if(appState.isFarPastMerged) {
@@ -724,11 +790,12 @@
                 `).join('');
             }
 
+            // Near Past Column
             const nearCol = document.getElementById('previewNearPastCol');
             nearCol.innerHTML = '';
             if(appState.isNearPastMerged) {
                 nearCol.classList.remove('flex', 'flex-col', 'border-t-0');
-                nearCol.innerHTML = `<div id="previewNearPast" class="vertical-text font-bold text-2xl" style="color: var(--accent-wood)" data-color-variable="--accent-wood">${appState.nearPast}</div>`;
+                nearCol.innerHTML = `<div id="previewNearPast" class="vertical-text font-bold text-2xl" style="color: ${accentWood}" data-color-variable="--accent-wood">${appState.nearPast}</div>`;
             } else {
                 nearCol.classList.add('flex', 'flex-col', 'border-t-0');
                 nearCol.innerHTML = appState.rows.map(row => `
