@@ -24,11 +24,11 @@
             --bg-pattern-opacity: 0.08;
         }
 
-        /* --- ثيم النساء (الراسخون - عنابي ملكي) --- */
+        /* --- ثيم النساء (الراسخون) - تم الإعادة للعنابي الملكي --- */
         body.theme-female {
-            --primary-dark: #630825; /* عنابي ملكي */
-            --primary-gold: #d4a373; /* ذهبي وردي قليلاً */
-            --accent-wood: #4a0404;
+            --primary-dark: #630825; /* عنابي ملكي غامق */
+            --primary-gold: #d4a373; /* ذهبي هادئ */
+            --accent-wood: #4a0404; /* عنابي مسود */
         }
 
         body { 
@@ -113,7 +113,7 @@
         .modal-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(var(--primary-dark-rgb, 26, 60, 52), 0.8); /* سيتم تحديثه بالجافاسكريبت للون الثيم */
+            background: rgba(var(--primary-dark-rgb, 26, 60, 52), 0.8);
             backdrop-filter: blur(8px);
             z-index: 9999;
             display: flex;
@@ -168,15 +168,22 @@
         }
         .team-card:hover { transform: translateY(-5px); }
         .team-card.male:hover { border-color: #1a3c34; background-color: #f0fdf4; }
+        /* تم تعديل لون الهوفر للعنابي */
         .team-card.female:hover { border-color: #630825; background-color: #fff0f5; }
     </style>
 </head>
 <body class="min-h-screen pb-24 transition-colors duration-500">
 
-    <!-- Team Selection Modal (يظهر أول مرة فقط) -->
+    <!-- شريط التنبيه الأحمر للدعم (تم تصغير الخط) -->
+    <div onclick="window.location.href='https://ipn.eg/S/shaba1/instapay/0e3P4q'" class="w-full bg-[#b8860b] text-white text-center py-2.5 text-xs font-bold cursor-pointer hover:bg-[#a07e26] transition relative z-[60] flex items-center justify-center gap-2 shadow-md">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-pulse"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        <span>ساهم في دعم المنصة واستمرارها (InstaPay) - اضغط هنا</span>
+    </div>
+
+    <!-- Team Selection Modal -->
     <div id="teamSelectionModal" class="modal-overlay active" style="z-index: 10000;">
         <div class="bg-[#fffdf9] p-8 rounded-3xl shadow-2xl max-w-md w-full mx-4 border-4 border-[#c5a059] text-center relative overflow-hidden transform scale-100 transition-transform duration-300">
-            <!-- زخرفة بسيطة -->
+            <!-- الشريط الملون العلوي -->
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#1a3c34] via-[#c5a059] to-[#630825]"></div>
             
             <h2 class="text-2xl font-bold text-[#5d4037] mb-2 historical-font">مرحباً بكم في منصة الحفظ</h2>
@@ -192,10 +199,11 @@
                     <span class="text-[10px] text-gray-400">للرجال</span>
                 </div>
 
-                <!-- خيار النساء -->
+                <!-- خيار النساء (تم تعديل اللون هنا أيضاً) -->
                 <div onclick="selectTeam('female')" class="team-card female bg-white p-4 rounded-xl shadow-md flex flex-col items-center gap-3 group">
                     <div class="w-16 h-16 rounded-full bg-[#630825] text-[#d4a373] flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 transition-transform">
-                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+                        <!-- أيقونة الدرع (تمت إزالة علامة التعجب) -->
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                     </div>
                     <h3 class="font-bold text-[#630825]">الراسخون</h3>
                     <span class="text-[10px] text-gray-400">للنساء</span>
@@ -233,7 +241,7 @@
             
             <div class="flex items-center gap-3 relative z-10">
                 <div class="relative">
-                    <img src="/logo.jpg" onerror="this.src='https://via.placeholder.com/150/1a3c34/c5a059?text=Quran'" alt="شعار الموقع" style="border-color: var(--primary-gold);" class="w-14 h-14 rounded-full border-2 shadow-md object-cover bg-white p-0.5">
+                    <img id="headerLogo" src="/logo.jpg" onerror="this.src='https://via.placeholder.com/150/1a3c34/c5a059?text=Quran'" alt="شعار الموقع" style="border-color: var(--primary-gold);" class="w-14 h-14 rounded-full border-2 shadow-md object-cover bg-white p-0.5">
                 </div>
                 <div>
                     <h1 style="color: var(--primary-gold);" class="text-xl font-bold leading-tight historical-font">انشاء جدول حفظ</h1>
@@ -463,13 +471,18 @@
         function applyTeamTheme(team) {
             const body = document.body;
             const teamTexts = document.querySelectorAll('.team-name-text');
-            
+            const logo = document.getElementById('headerLogo');
+
             if (team === 'female') {
                 body.classList.add('theme-female');
                 teamTexts.forEach(el => el.innerText = 'مجموعة الراسخون');
+                // تغيير الشعار في حالة النساء (يمكنك وضع رابط صورة آخر هنا)
+                logo.src = 'https://i.postimg.cc/Wd54WcVy/image.png'; 
             } else {
                 body.classList.remove('theme-female');
                 teamTexts.forEach(el => el.innerText = 'مجموعة الجبال الرواسي');
+                // الشعار الافتراضي
+                logo.src = '/logo.jpg';
             }
             // Re-render to update dynamic colors in canvas/preview
             renderPreview();
@@ -502,7 +515,7 @@
             renderPreview();
         }
 
-        // --- Helper to render specific cell HTML (Updated with CSS Vars) ---
+        // --- Helper to render specific cell HTML (INCREASED FONT SIZE HERE) ---
         function getCellHtml(data, isTextMode) {
             // Colors are handled by parent DIVs or inline styles generated dynamically
             const primaryDark = getComputedStyle(document.body).getPropertyValue('--primary-dark').trim();
