@@ -24,7 +24,7 @@
             --bg-pattern-opacity: 0.08;
         }
 
-        /* --- ثيم النساء (الراسخون) - تم الإعادة للعنابي الملكي --- */
+        /* --- ثيم النساء (الراسخون) - عنابي ملكي --- */
         body.theme-female {
             --primary-dark: #630825; /* عنابي ملكي غامق */
             --primary-gold: #d4a373; /* ذهبي هادئ */
@@ -34,7 +34,6 @@
         body { 
             font-family: 'Tajawal', sans-serif; 
             background-color: #f0ebe0;
-            /* خلفية زخرفية */
             background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c5a059' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
             overflow-x: hidden; 
             transition: background-color 0.5s ease;
@@ -168,13 +167,21 @@
         }
         .team-card:hover { transform: translateY(-5px); }
         .team-card.male:hover { border-color: #1a3c34; background-color: #f0fdf4; }
-        /* تم تعديل لون الهوفر للعنابي */
         .team-card.female:hover { border-color: #630825; background-color: #fff0f5; }
+
+        /* Custom Select Style */
+        select.custom-select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            text-indent: 1px;
+            text-overflow: '';
+        }
     </style>
 </head>
 <body class="min-h-screen pb-24 transition-colors duration-500">
 
-    <!-- شريط التنبيه الأحمر للدعم (تم تصغير الخط) -->
+    <!-- شريط التنبيه الأحمر للدعم -->
     <div onclick="window.location.href='https://ipn.eg/S/shaba1/instapay/0e3P4q'" class="w-full bg-[#b8860b] text-white text-center py-2.5 text-xs font-bold cursor-pointer hover:bg-[#a07e26] transition relative z-[60] flex items-center justify-center gap-2 shadow-md">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-pulse"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
         <span>ساهم في دعم المنصة واستمرارها (InstaPay) - اضغط هنا</span>
@@ -183,7 +190,6 @@
     <!-- Team Selection Modal -->
     <div id="teamSelectionModal" class="modal-overlay active" style="z-index: 10000;">
         <div class="bg-[#fffdf9] p-8 rounded-3xl shadow-2xl max-w-md w-full mx-4 border-4 border-[#c5a059] text-center relative overflow-hidden transform scale-100 transition-transform duration-300">
-            <!-- الشريط الملون العلوي -->
             <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#1a3c34] via-[#c5a059] to-[#630825]"></div>
             
             <h2 class="text-2xl font-bold text-[#5d4037] mb-2 historical-font">مرحباً بكم في منصة الحفظ</h2>
@@ -199,10 +205,9 @@
                     <span class="text-[10px] text-gray-400">للرجال</span>
                 </div>
 
-                <!-- خيار النساء (تم تعديل اللون هنا أيضاً) -->
+                <!-- خيار النساء -->
                 <div onclick="selectTeam('female')" class="team-card female bg-white p-4 rounded-xl shadow-md flex flex-col items-center gap-3 group">
                     <div class="w-16 h-16 rounded-full bg-[#630825] text-[#d4a373] flex items-center justify-center text-3xl shadow-lg group-hover:scale-110 transition-transform">
-                        <!-- أيقونة الدرع (تمت إزالة علامة التعجب) -->
                         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                     </div>
                     <h3 class="font-bold text-[#630825]">الراسخون</h3>
@@ -245,18 +250,33 @@
                 </div>
                 <div>
                     <h1 style="color: var(--primary-gold);" class="text-xl font-bold leading-tight historical-font">انشاء جدول حفظ</h1>
-                    <p class="text-xs text-emerald-100/80 font-light flex items-center gap-1">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5 4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-                        هدية من <span class="team-name-text">مجموعة الجبال الرواسي</span>
-                    </p>
+                    <div class="flex items-center gap-1">
+                        <p class="text-xs text-emerald-100/80 font-light flex items-center gap-1">
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5 4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+                            هدية من <span class="team-name-text">مجموعة الجبال الرواسي</span>
+                        </p>
+                    </div>
                 </div>
             </div>
             
-            <button onclick="downloadImage()" id="downloadBtn" class="flex items-center gap-2 bg-black/20 hover:bg-black/30 text-[var(--primary-gold)] px-5 py-2 rounded-full text-sm font-bold shadow-lg transition border border-[var(--primary-gold)]/30 relative z-10 active:scale-95 disabled:opacity-50">
-                <span class="hidden md:inline">تحميل صورة</span>
-                <span class="md:hidden">تحميل</span>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-            </button>
+            <div class="flex items-center gap-2 relative z-10">
+                <!-- Dropdown -->
+                <div class="relative group">
+                    <select id="teamSelector" onchange="selectTeam(this.value)" class="custom-select appearance-none bg-black/20 hover:bg-black/30 text-[var(--primary-gold)] pl-8 pr-3 py-2 rounded-full text-xs font-bold border border-[var(--primary-gold)]/30 focus:outline-none cursor-pointer transition-colors">
+                        <option value="male" class="bg-[#1a3c34] text-[#c5a059]">الجبال الرواسي</option>
+                        <option value="female" class="bg-[#630825] text-[#d4a373]">الراسخون</option>
+                    </select>
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none">
+                        <svg class="w-4 h-4 text-[var(--primary-gold)]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                </div>
+
+                <button onclick="downloadImage()" id="downloadBtn" class="flex items-center gap-2 bg-black/20 hover:bg-black/30 text-[var(--primary-gold)] px-5 py-2 rounded-full text-sm font-bold shadow-lg transition border border-[var(--primary-gold)]/30 active:scale-95 disabled:opacity-50">
+                    <span class="hidden md:inline">تحميل صورة</span>
+                    <span class="md:hidden">تحميل</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </button>
+            </div>
         </div>
     </header>
 
@@ -472,19 +492,19 @@
             const body = document.body;
             const teamTexts = document.querySelectorAll('.team-name-text');
             const logo = document.getElementById('headerLogo');
+            const selector = document.getElementById('teamSelector');
 
             if (team === 'female') {
                 body.classList.add('theme-female');
                 teamTexts.forEach(el => el.innerText = 'مجموعة الراسخون');
-                // تغيير الشعار في حالة النساء (يمكنك وضع رابط صورة آخر هنا)
                 logo.src = 'https://i.postimg.cc/Wd54WcVy/image.png'; 
+                if(selector) selector.value = 'female';
             } else {
                 body.classList.remove('theme-female');
                 teamTexts.forEach(el => el.innerText = 'مجموعة الجبال الرواسي');
-                // الشعار الافتراضي
                 logo.src = '/logo.jpg';
+                if(selector) selector.value = 'male';
             }
-            // Re-render to update dynamic colors in canvas/preview
             renderPreview();
         }
 
@@ -517,7 +537,6 @@
 
         // --- Helper to render specific cell HTML (INCREASED FONT SIZE HERE) ---
         function getCellHtml(data, isTextMode) {
-            // Colors are handled by parent DIVs or inline styles generated dynamically
             const primaryDark = getComputedStyle(document.body).getPropertyValue('--primary-dark').trim();
             const primaryGold = getComputedStyle(document.body).getPropertyValue('--primary-gold').trim();
             const accentWood = getComputedStyle(document.body).getPropertyValue('--accent-wood').trim();
@@ -545,11 +564,9 @@
             const isRange = data.type === 'range';
 
             const div = document.createElement('div');
-            // Using inline styles for dynamic theme update in editors
             div.className = 'bg-[#fffdf9] p-3 rounded-lg border shadow-sm mb-3';
             div.style.borderColor = 'rgba(197, 160, 89, 0.2)'; 
             
-            // Toggle Logic
             const primaryDark = 'var(--primary-dark)';
             const activeStyle = `background-color: ${primaryDark}; color: white;`;
             const inactiveStyle = `color: gray;`;
@@ -658,7 +675,6 @@
                 
                 const isRange = row.type === 'range';
                 
-                // Styles
                 const primaryDark = 'var(--primary-dark)';
                 const activeStyle = `background-color: ${primaryDark}; color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);`;
                 const inactiveStyle = `color: gray;`;
@@ -730,12 +746,10 @@
             document.getElementById('previewGroup').innerText = appState.groupNumber;
             document.getElementById('previewWeek').innerText = appState.weekNumber;
             
-            // Get current theme colors
             const primaryDark = getComputedStyle(document.body).getPropertyValue('--primary-dark').trim();
             const primaryGold = getComputedStyle(document.body).getPropertyValue('--primary-gold').trim();
             const accentWood = getComputedStyle(document.body).getPropertyValue('--accent-wood').trim();
 
-            // Far Past Column
             const farCol = document.getElementById('previewFarPastCol');
             farCol.innerHTML = '';
             if(appState.isFarPastMerged) {
@@ -750,7 +764,6 @@
                 `).join('');
             }
 
-            // Near Past Column
             const nearCol = document.getElementById('previewNearPastCol');
             nearCol.innerHTML = '';
             if(appState.isNearPastMerged) {
@@ -782,10 +795,7 @@
 
         function drawVerticalText(text, colorVariable) {
             if (!text) return null;
-            
-            // Get actual color from CSS variable
             const color = getComputedStyle(document.body).getPropertyValue(colorVariable).trim();
-
             const tempCanvas = document.createElement('canvas');
             const ctx = tempCanvas.getContext('2d');
             const width = 540; const height = 250;
